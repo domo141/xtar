@@ -8,7 +8,7 @@
  *	    All rights reserved
  *
  * Created: Wed 27 May 2009 20:48:29 EEST too
- * Last modified: Fri 05 Jun 2009 16:47:50 EEST too
+ * Last modified: Fri 05 Jun 2009 17:39:21 EEST too
  */
 
 /* stuff from original archive_platform.h, with extras and tunes */
@@ -31,6 +31,10 @@
 #define HAVE_WCSLEN 1
 #define HAVE_WMEMCMP 1
 #define HAVE_WMEMCPY 1
+
+
+#define HAVE_ZLIB_H 1
+#define HAVE_BZLIB_H 1
 
 
 #define ARCHIVE_ERRNO_MISC 1

@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 16:16:03 EEST too
- * Last modified: Fri 05 Jun 2009 16:50:31 EEST too
+ * Last modified: Fri 05 Jun 2009 17:27:22 EEST too
  */
 
 #include <string.h>
@@ -28,13 +28,11 @@ int main(int argc, char * argv[])
     return 0;
 }
 
-#if 0
-int archive_read_close(struct archive *a)
+// XXX TMP
+int __archive_read_program(void)
 {
-    (void)a;
-    return 0; //((a->vtable->archive_close)(a)); // XXX
+        return ARCHIVE_FATAL;
 }
-#endif
 
 
 // taken examples/untar.c, then stripped & modified
@@ -55,6 +53,10 @@ extract(const char *filename, int do_extract, int flags)
 	a = archive_read_new();
 
 	archive_read_support_format_tar(a);
+
+	archive_read_support_compression_gzip(a);
+	archive_read_support_compression_bzip2(a);
+
 	/*
 	 * On my system, enabling other archive formats adds 20k-30k
 	 * each.  Enabling gzip decompression adds about 20k.
