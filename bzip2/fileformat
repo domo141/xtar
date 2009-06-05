@@ -1,0 +1,32 @@
+
+-*- coding: utf-8 -*-
+
+From: http://en.wikipedia.org/wiki/Bzip2
+
+A .bz2 stream consists of a 4-byte header, followed by zero or more
+compressed blocks, immediately followed by an end-of-stream marker
+containing a 32-bit CRC for the plaintext whole stream processed. The
+compressed blocks are bit-aligned and no padding occurs.
+
+
+.magic:16                       = 'BZ' signature/magic number
+.version:8                      = 'h' for Bzip2 ('H'uffman coding), '0' for Bzip1 (deprecated)
+.hundred_k_blocksize:8          = '1'..'9' block-size 100 kB-900 kB
+
+.compressed_magic:48            = 0x314159265359 (BCD (pi))
+.crc:32                         = checksum for this block
+.randomised:1                   = 0=>normal, 1=>randomised (deprecated)
+.origPtr:24                     = starting pointer into BWT for after untransform
+.huffman_used_map:16            = bitmap, of ranges of 16 bytes, present/not present
+.huffman_used_bitmaps:0..256    = bitmap, of symbols used, present/not present (multiples of 16)
+.huffman_groups:3               = 2..6 number of different Huffman tables in use
+.selectors_used:15              = number of times that the Huffman tables are swapped (each 50 bytes)
+*.selector_list:1..6            = zero-terminated bit runs (0..62) of MTF'ed Huffman table (*selectors_used)
+.start_huffman_length:5         = 0..20 starting bit length for Huffman deltas
+*.delta_bit_length:1..40        = 0=>next symbol; 1=>alter length
+                                                { 1=>decrement length;  0=>increment length } (*(symbols+2)*groups)
+.contents:2..∞                  = Huffman encoded data stream until end of block
+
+.eos_magic:48                   = 0x177245385090 (BCD sqrt(pi))
+.crc:32                         = checksum for whole stream
+.padding:0..7                   = align to whole byte
