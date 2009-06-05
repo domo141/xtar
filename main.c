@@ -1,39 +1,111 @@
 /*
  * $Id; main.c $
  *
- * Author: Tomi Ollila <>
+ * Author: Tomi Ollila -- too ät iki piste fi
  *
  *	Copyright (c) 2009 Tomi Ollila
  *	    All rights reserved
  *
- * Created: Fri 05 Jun 2009 16:16:03 EEST too
- * Last modified: Fri 05 Jun 2009 17:27:22 EEST too
+ * Created: Fri 05 Jun 2009 16:56:03 EEST too
+ * Last modified: Fri 05 Jun 2009 19:11:54 EEST too
  */
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include "archive_platform.h"
 #include "archive.h"
 #include "archive_entry.h"
 
+#define null ((void *)0)
+
+struct {
+    const char * progname;
+    const char * filename;
+    const char * xdir;
+    const char * namefile;
+    const char * linkfile;
+    FILE * namefh;
+    FILE * linkfh;
+} G;
+
+init_G(const char * pn)
+{
+    memset(&G, 0, sizeof G);
+    G.progname = pn;
+    //G.namefd = G.linkfd = -1;
+}
+
 // examples/untar.c
 static void extract(const char *filename, int do_extract, int flags);
 
+static void usage(const char * format, ...)
+{
+    if (format) {
+	va_list ap;
+	fprintf(stderr, "\n%s: ", G.progname);
+	va_start(ap, format);
+	vfprintf(stderr, format, ap);
+	va_end(ap);
+	fputc('\n', stderr);
+    }
+    fprintf(stderr, "\nUsage: %s [-C <dir>] [-n <file>] [-l <file>]\n\n",
+	    G.progname);
+    exit(1);
+}
+
+#define d0(x) do {} while (0)
+
+static char * get_next_arg(int * c, char *** v, const char * umsg)
+{
+    if ((*v)[1] == null)
+	usage(umsg);
+
+    (*v)++; (*c)--;
+
+    d0(("nxt arg: %s, left %d", **v, *c));
+
+    return **v;
+}
+
+static void handle_args(int argc, char ** argv)
+{
+    while (argv[0] && argv[0][0] == '-'
+	   && argv[0][1] != '\0'
+	   && (argv[0][1] == '-' || argv[0][2] == '\0'))
+    {
+	d0(("arg: %s", *argvp[0]));
+
+	switch (argv[0][1])
+	{
+#define ARGREQ(o) "option requires an argument -- " o
+	case 'C': G.xdir = get_next_arg(&argc, &argv, ARGREQ("C")); break;
+	case 'n': G.namefile = get_next_arg(&argc, &argv, ARGREQ("n")); break;
+	case 'l': G.linkfile = get_next_arg(&argc, &argv, ARGREQ("l")); break;
+	default:
+	    usage("%s: unknown option.", argv[0]);
+	}
+	argc--; argv++;
+    }
+    G.filename = argv[0];
+    if (G.filename == null)
+	usage("filename missing");
+
+    if (argc > 1)
+	usage("Too many arguments");
+}
+
 int main(int argc, char * argv[])
 {
-    (void)argc; (void)argv;
-    //extract("foo.tar", 1, 0);
-    extract("bzip2-1.0.5.tar.gz", 1, 0);
+    init_G(argv[0]);
+    argc--; argv++;
+
+    handle_args(argc, argv);
+
+    extract(G.filename, 1, 0);
     return 0;
 }
-
-// XXX TMP
-int __archive_read_program(void)
-{
-        return ARCHIVE_FATAL;
-}
-
 
 // taken examples/untar.c, then stripped & modified
 

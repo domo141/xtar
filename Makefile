@@ -11,8 +11,7 @@ LA_OBJ = archive_check_magic.o archive_entry.o archive_read.o \
 	archive_read_support_compression_gzip.o \
 	archive_read_support_compression_bzip2.o
 
-BZ2_OBJ = bzlib_partial.o crctable.o \
-	decompress.o huffman.o randtable.o
+BZ2_OBJ = bzlib_partial.o crctable.o decompress.o huffman.o randtable.o
 
 
 OBJ = main.o $(LA_OBJ) $(BZ2_OBJ) 
@@ -45,7 +44,7 @@ WARN1?= -W -Wwrite-strings -Wcast-qual -Wshadow #-Wconversion
 WOPTS=	$(WARN0) $(WARN1)
 
 CFLAGS=-O2 -I. -I..
-C99FLAFGS=-std=gnu99
+C99FLAGS=-std=gnu99
 
 #LFLAGS=-s -lz -lbz2
 LFLAGS=-s -lz
@@ -60,7 +59,6 @@ obj_ux/%.o: archive/%.c
 
 obj_ux/%.o: bzip2/%.c
 	$(CC) -o $@ -c $< $(OPTS)
-
 
 clean:
 	rm -rf obj_ux *~
