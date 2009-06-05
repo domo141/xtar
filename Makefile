@@ -55,6 +55,9 @@ OPTS= $(CFLAGS) $(C99FLAGS) $(WOPTS)
 obj_ux/%.o: %.c
 	$(CC) -o $@ -c $< $(OPTS)
 
+obj_ux/%.o: archive/%.c
+	$(CC) -o $@ -c $< $(OPTS)
+
 obj_ux/%.o: bzip2/%.c
 	$(CC) -o $@ -c $< $(OPTS)
 
