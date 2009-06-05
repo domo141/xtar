@@ -5,8 +5,9 @@ CC=	gcc
 .SUFFIXES: # none
 
 LA_OBJ = archive_check_magic.o archive_entry.o archive_read.o \
+	archive_read_open_fd.o archive_read_open_filename.o \
 	archive_read_support_format_tar.o archive_string.o \
-	archive_string_sprintf.o archive_util.o
+	archive_string_sprintf.o archive_util.o archive_virtual.o
 
 OBJ = main.o $(LA_OBJ)
 

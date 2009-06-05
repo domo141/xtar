@@ -8,7 +8,7 @@
  *	    All rights reserved
  *
  * Created: Wed 27 May 2009 20:48:29 EEST too
- * Last modified: Wed 27 May 2009 21:01:40 EEST too
+ * Last modified: Fri 05 Jun 2009 16:47:50 EEST too
  */
 
 /* stuff from original archive_platform.h, with extras and tunes */
@@ -25,6 +25,7 @@
 #define HAVE_STDLIB_H 1
 #define HAVE_STRING_H 1
 #define HAVE_WCHAR_H 1
+#define HAVE_FCNTL_H 1
 
 #define HAVE_WCSCPY 1
 #define HAVE_WCSLEN 1
