@@ -32,7 +32,8 @@
 
 /* XXX added 20090524 too */
 
-const char * BZ2_bzlibVersion(void) { return "1.0.5"; }
+
+const char * BZ_API(BZ2_bzlibVersion)(void) { return "1.0.5"; }
 
 
 void BZ2_bz__AssertH__fail ( int errcode )

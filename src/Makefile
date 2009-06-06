@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Sat 06 Jun 2009 11:07:27 EEST too
+# Last modified: Sat 06 Jun 2009 21:57:44 EEST too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -42,10 +42,10 @@ $(TRG_W32):	CC = $(CC_W32)
 
 all: $(TRG_UX) always
 
-TRGS_ALL = $(TRG_UX) $(TRG_UX_DYN)
+TRGS_ALL = $(TRG_UX) $(TRG_UX_DYN) $(TRG_W32)
 
-LFLAGS=-s
-LFLAGS_DYN=-s -lz -lbz2
+LFLAGS = -s
+LFLAGS_DYN = -s -lz -lbz2
 
 $(TRG_UX): $(OBJ_UX)
 	$(CC) -o $@ $(LFLAGS) $(OBJ_UX)
@@ -54,9 +54,8 @@ $(TRG_UX_DYN): $(OBJ_UX_DYN)
 	$(CC) -o $@ $(LFLAGS_DYN) $(OBJ_UX_DYN)
 
 $(TRG_W32): $(OBJ_W32)
-	grep COFF $< >/dev/null
+	file $< | grep COFF >/dev/null
 	$(CC) -o $@ $(LFLAGS) $(OBJ_W32)
-
 
 # Dependencies not exact, just to help compiling sometimes.
 # Enter make distclean all to be sure. 

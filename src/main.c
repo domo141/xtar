@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sat 06 Jun 2009 11:10:22 EEST too
+ * Last modified: Sat 06 Jun 2009 21:59:27 EEST too
  */
 
 #include <string.h>
@@ -31,7 +31,7 @@ struct {
     FILE * linkfh;
 } G;
 
-init_G(const char * pn)
+void init_G(const char * pn)
 {
     memset(&G, 0, sizeof G);
     G.progname = pn;
@@ -160,3 +160,14 @@ extract(const char * filename, int do_extract)
 	archive_read_close(a);
 	archive_read_finish(a);
 }
+
+#if WIN32
+
+/* unused, but defined functions -- maybe cleaned up later ? */
+
+int mkdev(void) { return -1; }
+int minor(void) { return -1; }
+int major(void) { return -1; }
+
+#endif
+

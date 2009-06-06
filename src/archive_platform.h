@@ -8,7 +8,7 @@
  *	    All rights reserved
  *
  * Created: Wed 27 May 2009 20:48:29 EEST too
- * Last modified: Fri 05 Jun 2009 17:39:21 EEST too
+ * Last modified: Sat 06 Jun 2009 21:51:01 EEST too
  */
 
 /* stuff from original archive_platform.h, with extras and tunes */
@@ -47,6 +47,14 @@
 /* Just leaving this macro replacement empty leads to a dangling semicolon. */
 #define __FBSDID(a) struct _undefined_hack
 
+
+#if WIN32
+/* w32 haxes & tunes */
+
+typedef unsigned int uid_t;
+typedef unsigned int gid_t;
+
+#endif /* WIN32 */
 
 
 
