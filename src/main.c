@@ -6,8 +6,8 @@
  *	Copyright (c) 2009 Tomi Ollila
  *	    All rights reserved
  *
- * Created: Fri 05 Jun 2009 16:56:03 EEST too
- * Last modified: Fri 05 Jun 2009 19:11:54 EEST too
+ * Created: Fri 05 Jun 2009 15:56:03 EEST too
+ * Last modified: Sat 06 Jun 2009 11:10:22 EEST too
  */
 
 #include <string.h>
@@ -18,6 +18,7 @@
 #include "archive.h"
 #include "archive_entry.h"
 
+enum { false = 0, true = 1 };
 #define null ((void *)0)
 
 struct {
@@ -38,7 +39,7 @@ init_G(const char * pn)
 }
 
 // examples/untar.c
-static void extract(const char *filename, int do_extract, int flags);
+static void extract(const char *filename, int do_extract);
 
 static void usage(const char * format, ...)
 {
@@ -103,7 +104,7 @@ int main(int argc, char * argv[])
 
     handle_args(argc, argv);
 
-    extract(G.filename, 1, 0);
+    extract(G.filename, true);
     return 0;
 }
 
@@ -114,13 +115,11 @@ int main(int argc, char * argv[])
 #define msg puts
 
 static void
-extract(const char *filename, int do_extract, int flags)
+extract(const char * filename, int do_extract)
 {
-	struct archive *a;
-	struct archive_entry *entry;
+	struct archive * a;
+	struct archive_entry * entry;
 	int r;
-
-	(void) flags; // XXX to be removed ?
 
 	a = archive_read_new();
 
@@ -155,19 +154,9 @@ extract(const char *filename, int do_extract, int flags)
 			msg("x ");
 		if (verbose || !do_extract)
 			msg(archive_entry_pathname(entry));
-#if 0
-		if (do_extract) {
-			r = archive_write_header(ext, entry);
-			if (r != ARCHIVE_OK)
-				errmsg(archive_error_string(a));
-			else
-				copy_data(a, ext);
-		}
-#endif
 		if (verbose || !do_extract)
 			msg("\n");
 	}
 	archive_read_close(a);
 	archive_read_finish(a);
-	exit(0);
 }
