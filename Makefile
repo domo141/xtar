@@ -11,10 +11,11 @@ LA_OBJ = archive_check_magic.o archive_entry.o archive_read.o \
 	archive_read_support_compression_gzip.o \
 	archive_read_support_compression_bzip2.o
 
+# An alternative to these 2 is to use -lz -lbz2 link time options...
 BZ2_OBJ = bzlib_partial.o crctable.o decompress.o huffman.o randtable.o
+Z_OBJ = inflate.o inffast.o inftrees.o crc32.o adler32.o zutil.o
 
-
-OBJ = main.o $(LA_OBJ) $(BZ2_OBJ) 
+OBJ = main.o $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ) 
 
 OBJ_UX = $(OBJ:%=obj_ux/%)
 
@@ -47,7 +48,7 @@ CFLAGS=-O2 -I. -I..
 C99FLAGS=-std=gnu99
 
 #LFLAGS=-s -lz -lbz2
-LFLAGS=-s -lz
+LFLAGS=-s
 
 OPTS= $(CFLAGS) $(C99FLAGS) $(WOPTS)
 
@@ -58,6 +59,9 @@ obj_ux/%.o: archive/%.c
 	$(CC) -o $@ -c $< $(OPTS)
 
 obj_ux/%.o: bzip2/%.c
+	$(CC) -o $@ -c $< $(OPTS)
+
+obj_ux/%.o: zlib/%.c
 	$(CC) -o $@ -c $< $(OPTS)
 
 clean:
