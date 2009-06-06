@@ -11,23 +11,31 @@ LA_OBJ = archive_check_magic.o archive_entry.o archive_read.o \
 	archive_read_support_compression_gzip.o \
 	archive_read_support_compression_bzip2.o
 
-# An alternative to these 2 is to use -lz -lbz2 link time options...
 BZ2_OBJ = bzlib_partial.o crctable.o decompress.o huffman.o randtable.o
 Z_OBJ = inflate.o inffast.o inftrees.o crc32.o adler32.o zutil.o
 
 OBJ = main.o $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ) 
+OBJ_DYN = main.o $(LA_OBJ)
 
 OBJ_UX = $(OBJ:%=obj_ux/%)
+OBJ_UX_DYN = $(OBJ_DYN:%=obj_ux/%)
 
 TRG_UX = xtar
+TRG_UX_DYN = xtar_dynamic
 
 all: $(TRG_UX)
-.PHONY: all
+.PHONY: all clean distclean
 
-TRGS_ALL = $(TRG_UX)
+TRGS_ALL = $(TRG_UX) $(TRG_UX_DYN)
+
+LFLAGS=-s
+LFLAGS_DYN=-s -lz -lbz2
 
 $(TRG_UX): $(OBJ_UX)
 	$(CC) -o $@ $(LFLAGS) $(OBJ_UX)
+
+$(TRG_UX_DYN): $(OBJ_UX_DYN)
+	$(CC) -o $@ $(LFLAGS_DYN) $(OBJ_UX_DYN)
 
 # dependencies not exact, just to help compiling sometimes.
 # enter make distclean all for 
@@ -46,9 +54,6 @@ WOPTS=	$(WARN0) $(WARN1)
 
 CFLAGS=-O2 -I. -I..
 C99FLAGS=-std=gnu99
-
-#LFLAGS=-s -lz -lbz2
-LFLAGS=-s
 
 OPTS= $(CFLAGS) $(C99FLAGS) $(WOPTS)
 
