@@ -1,3 +1,13 @@
+#!/usr/bin/env make
+# $Id; Makefile $
+#
+# Author: Tomi Ollila -- too ät iki piste fi
+#
+#	Copyright (c) 2009 Tomi Ollila
+#	    All rights reserved
+#
+# Created: Fri 05 Jun 2009 17:20:12 EEST too
+# Last modified: Sat 06 Jun 2009 10:32:12 EEST too
 
 CC_NATIVE = gcc
 CC=	gcc
@@ -37,8 +47,8 @@ $(TRG_UX): $(OBJ_UX)
 $(TRG_UX_DYN): $(OBJ_UX_DYN)
 	$(CC) -o $@ $(LFLAGS_DYN) $(OBJ_UX_DYN)
 
-# dependencies not exact, just to help compiling sometimes.
-# enter make distclean all for 
+# Dependencies not exact, just to help compiling sometimes.
+# Enter make distclean all to be sure. 
 $(OBJ_UX): obj_ux/.dirstamp Makefile archive_platform.h
 
 obj_ux/.dirstamp:
