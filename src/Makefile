@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Sat 06 Jun 2009 21:57:44 EEST too
+# Last modified: Sun 07 Jun 2009 22:16:38 EEST too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -25,8 +25,8 @@ LA_OBJ = archive_check_magic.o archive_entry.o archive_read.o \
 BZ2_OBJ = bzlib_partial.o crctable.o decompress.o huffman.o randtable.o
 Z_OBJ = inflate.o inffast.o inftrees.o crc32.o adler32.o zutil.o
 
-OBJ = main.o $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ) 
-OBJ_DYN = main.o $(LA_OBJ)
+OBJ = main.o xtar_util.o $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ) 
+OBJ_DYN = main.o xtar_util.o $(LA_OBJ)
 
 OBJ_UX = $(OBJ:%=obj_ux/%)
 OBJ_UX_DYN = $(OBJ_DYN:%=obj_ux/%)

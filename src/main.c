@@ -7,19 +7,18 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sun 07 Jun 2009 14:10:01 EEST too
+ * Last modified: Sun 07 Jun 2009 22:17:32 EEST too
  */
 
 #include <string.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <errno.h>
 
 #include "archive_platform.h"
 #include "archive.h"
 #include "archive_entry.h"
+
+#include "xtar_util.h"
 
 enum { false = 0, true = 1 };
 #define null ((void *)0)
@@ -54,43 +53,6 @@ static void usage(const char * format, ...)
 	    "tarfile\n\n", G.progname);
     exit(1);
 }
-
-static void vwarn(const char * format, va_list ap)
-{
-    int error = errno; /* XXX is this too late ? */
-
-    if (memcmp(format, "%C:", 3) == 0) {
-	fputs(G.progname, stderr);
-	format += 2;
-    }
-    vfprintf(stderr, format, ap);
-    if (format[strlen(format) - 1] == ':')
-	fprintf(stderr, " %s\n", strerror(error));
-    else
-	fputs("\n", stderr);
-//    fflush(stderr);
-}
-
-static void die(const char * format, ...)
-{
-    va_list ap;
-
-    va_start(ap, format);
-    vwarn(format, ap);
-    va_end(ap);
-    exit(1);
-}
-
-static void warn(const char * format, ...)
-{
-    va_list ap;
-
-    va_start(ap, format);
-    vwarn(format, ap);
-    va_end(ap);
-}
-
-#define d0(x) do {} while (0)
 
 static char * get_next_arg(int * c, char *** v, const char * umsg)
 {
@@ -199,17 +161,6 @@ int main(int argc, char * argv[])
     }
     archive_read_close(a);
     archive_read_finish(a);
-}
-
-static void doparents(const char * name)
-{
-    // single element cache for last path...
-    return;
-}
-
-static void writefully(int fd, char * buf, int len)
-{
-    write(fd, buf, len); // XXX
 }
 
 static void extract_file(const char * name, struct archive * a,
