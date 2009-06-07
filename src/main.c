@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sun 07 Jun 2009 13:24:04 EEST too
+ * Last modified: Sun 07 Jun 2009 14:10:01 EEST too
  */
 
 #include <string.h>
@@ -38,11 +38,7 @@ void init_G(const char * pn)
 {
     memset(&G, 0, sizeof G);
     G.progname = pn;
-    //G.namefd = G.linkfd = -1;
 }
-
-// examples/untar.c
-static void extract(const char *filename);
 
 static void usage(const char * format, ...)
 {
@@ -54,8 +50,8 @@ static void usage(const char * format, ...)
 	va_end(ap);
 	fputc('\n', stderr);
     }
-    fprintf(stderr, "\nUsage: %s [-C <dir>] [-n <file>] [-l <file>]\n\n",
-	    G.progname);
+    fprintf(stderr, "\nUsage: %s [-C <dir>] [-n <file>] [-l <file>] "
+	    "tarfile\n\n", G.progname);
     exit(1);
 }
 
@@ -129,11 +125,17 @@ static void handle_args(int argc, char ** argv)
     }
     G.filename = argv[0];
     if (G.filename == null)
-	usage("filename missing");
+	usage("'tarfile' missing");
 
     if (argc > 1)
-	usage("Too many arguments");
+	usage("too many arguments");
 }
+
+static void extract_file(const char *, struct archive *,struct archive_entry *);
+static void extract_dir(const char * name, struct archive_entry * entry);
+static void extract_symlink(const char * name, struct archive_entry * entry);
+static void extract_hardlink(const char * name, struct archive_entry * entry);
+
 
 int main(int argc, char * argv[])
 {
@@ -142,67 +144,61 @@ int main(int argc, char * argv[])
 
     handle_args(argc, argv);
 
-    extract(G.filename); // will be included here ...
-    return 0;
-}
+    if (G.namefile) {
+	G.namefh = fopen(G.namefile, "w");
+	if (G.namefh == null)
+	    die("fopen('%s') failed:", G.namefile);
+    }
+    if (G.linkfile) {
+	G.linkfh = fopen(G.linkfile, "w");
+	if (G.linkfh == null)
+	    die("fopen('%s') failed:", G.linkfile);
+    }
+    if (G.xdir) {
+	if (chdir(G.xdir) < 0) // XXX check windows operation
+	    die("chdir('%s') failed:", G.xdir);
+    }
 
-// not much resemblance left with examples/untar.c
+    struct archive * a;
+    struct archive_entry * entry;
+    int r;
 
-static void extract_file(const char *, struct archive *,struct archive_entry *);
-static void extract_dir(const char * name, struct archive_entry * entry);
-static void extract_symlink(const char * name, struct archive_entry * entry);
-static void extract_hardlink(const char * name, struct archive_entry * entry);
+    a = archive_read_new();
 
-static void
-extract(const char * filename)
-{
-	struct archive * a;
-	struct archive_entry * entry;
-	int r;
+    archive_read_support_format_tar(a);
 
-	a = archive_read_new();
+    archive_read_support_compression_gzip(a);
+    archive_read_support_compression_bzip2(a);
 
-	archive_read_support_format_tar(a);
+    /* read from stdin in case filename == '-' */
+    if (G.filename != null && strcmp(G.filename, "-") == 0)
+	G.filename = null;
+    if ((r = archive_read_open_file(a, G.filename, 10240)) != 0)
+	die("%s\n", archive_error_string(a));
 
-	/*
-	 * On my system, enabling other archive formats adds 20k-30k
-	 * each.  Enabling gzip decompression adds about 20k.
-	 * Enabling bzip2 is more expensive because the libbz2 library
-	 * isn't very well factored.
-	 */
-	/* ^^^^ from original author (of libarchive) ^^^^ (goes away soon ?)*/
-	archive_read_support_compression_gzip(a);
-	archive_read_support_compression_bzip2(a);
-
-	/* read from stdin in case filename == '-' */
-	if (filename != null && strcmp(filename, "-") == 0)
-		filename = null;
-	if ((r = archive_read_open_file(a, filename, 10240)) != 0)
+    for (;;)
+    {
+	r = archive_read_next_header(a, &entry);
+	if (r == ARCHIVE_EOF)
+	    break;
+	if (r != ARCHIVE_OK)
 	    die("%s\n", archive_error_string(a));
 
-	for (;;)
-	{
-	    r = archive_read_next_header(a, &entry);
-	    if (r == ARCHIVE_EOF)
-		break;
-	    if (r != ARCHIVE_OK)
-		die("%s\n", archive_error_string(a));
+	const char * pathname = archive_entry_pathname(entry);
+	int m = archive_entry_mode(entry);
 
-	    const char * pathname = archive_entry_pathname(entry);
-	    int m = archive_entry_mode(entry);
-
-	    if (AE_ISREG(m)) extract_file(pathname, a, entry);
-	    else if (AE_ISDIR(m)) extract_dir(pathname, entry);
-	    else if (AE_ISLNK(m)) extract_symlink(pathname, entry);
-	    else if (AEX_ISHL(m)) extract_hardlink(pathname, entry);
-	    else /* skipping */ { ; }
+	if (AE_ISREG(m)) extract_file(pathname, a, entry);
+	else if (AE_ISDIR(m)) extract_dir(pathname, entry);
+	else if (AE_ISLNK(m)) extract_symlink(pathname, entry);
+	else if (AEX_ISHL(m)) extract_hardlink(pathname, entry);
+	else /* skipping */ { ; }
 #if 0
-	    warn("name: %s, mode: %x -- %s (%d)",
-		 archive_entry_pathname(entry), m, s, m & AE_IFMT);
+	warn("name: %s, mode: %x -- %s (%d)",
+	     archive_entry_pathname(entry), m, s, m & AE_IFMT);
 #endif
-	}
-	archive_read_close(a);
-	archive_read_finish(a);
+    }
+    archive_read_close(a);
+    archive_read_finish(a);
 }
 
 static void doparents(const char * name)
