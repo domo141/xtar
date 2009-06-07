@@ -2,8 +2,12 @@
 This is my attempt to create portable and easily extendable tar extraction
 program, which supports:
 
-	 - all tar formats supported by libarchive 2.7.0
-	 - gzip and bzip2 (xz in the future) decompression
+	- all tar formats supported by libarchive 2.7.0
+	- gzip and bzip2 (xz in the future) decompression
+
+Target platforms: Unix, Windows (using mingw (cross) compiler).
+	- Note that archive_windows.[ch] is not included (but viewed
+	  during development for hints. good stuff.)
 
 This program includes the needed parts from libarchive, bzip2 and zlib
 source code (added on demand during trial and error compilation loops).

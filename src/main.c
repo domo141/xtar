@@ -7,12 +7,15 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sat 06 Jun 2009 21:59:27 EEST too
+ * Last modified: Sun 07 Jun 2009 11:40:18 EEST too
  */
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #include "archive_platform.h"
 #include "archive.h"
@@ -39,7 +42,7 @@ void init_G(const char * pn)
 }
 
 // examples/untar.c
-static void extract(const char *filename, int do_extract);
+static void extract(const char *filename);
 
 static void usage(const char * format, ...)
 {
@@ -54,6 +57,41 @@ static void usage(const char * format, ...)
     fprintf(stderr, "\nUsage: %s [-C <dir>] [-n <file>] [-l <file>]\n\n",
 	    G.progname);
     exit(1);
+}
+
+static void vwarn(const char * format, va_list ap)
+{
+    int error = errno; /* XXX is this too late ? */
+
+    if (memcmp(format, "%C:", 3) == 0) {
+	fputs(G.progname, stderr);
+	format += 2;
+    }
+    vfprintf(stderr, format, ap);
+    if (format[strlen(format) - 1] == ':')
+	fprintf(stderr, " %s\n", strerror(error));
+    else
+	fputs("\n", stderr);
+//    fflush(stderr);
+}
+
+static void die(const char * format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    vwarn(format, ap);
+    va_end(ap);
+    exit(1);
+}
+
+static void warn(const char * format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    vwarn(format, ap);
+    va_end(ap);
 }
 
 #define d0(x) do {} while (0)
@@ -104,18 +142,19 @@ int main(int argc, char * argv[])
 
     handle_args(argc, argv);
 
-    extract(G.filename, true);
+    extract(G.filename); // will be included here ...
     return 0;
 }
 
-// taken examples/untar.c, then stripped & modified
+// not much resemblance left with examples/untar.c
 
-#define errmsg puts
-#define verbose 1
-#define msg puts
+static void extract_file(const char *, struct archive *,struct archive_entry *);
+static void extract_dir(const char * name, struct archive_entry * entry);
+static void extract_symlink(const char * name, struct archive_entry * entry);
+static void extract_hardlink(const char * name, struct archive_entry * entry);
 
 static void
-extract(const char * filename, int do_extract)
+extract(const char * filename)
 {
 	struct archive * a;
 	struct archive_entry * entry;
@@ -125,49 +164,111 @@ extract(const char * filename, int do_extract)
 
 	archive_read_support_format_tar(a);
 
-	archive_read_support_compression_gzip(a);
-	archive_read_support_compression_bzip2(a);
-
 	/*
 	 * On my system, enabling other archive formats adds 20k-30k
 	 * each.  Enabling gzip decompression adds about 20k.
 	 * Enabling bzip2 is more expensive because the libbz2 library
 	 * isn't very well factored.
 	 */
-	if (filename != NULL && strcmp(filename, "-") == 0)
-		filename = NULL;
-	if ((r = archive_read_open_file(a, filename, 10240))) {
-		errmsg(archive_error_string(a));
-		errmsg("\n");
-		exit(r);
-	}
-	for (;;) {
-		r = archive_read_next_header(a, &entry);
-		if (r == ARCHIVE_EOF)
-			break;
-		if (r != ARCHIVE_OK) {
-			errmsg(archive_error_string(a));
-			errmsg("\n");
-			exit(1);
-		}
-		if (verbose && do_extract)
-			msg("x ");
-		if (verbose || !do_extract)
-			msg(archive_entry_pathname(entry));
-		if (verbose || !do_extract)
-			msg("\n");
+	/* ^^^^ from original author (of libarchive) ^^^^ (goes away soon ?)*/
+	archive_read_support_compression_gzip(a);
+	archive_read_support_compression_bzip2(a);
+
+	/* read from stdin in case filename == '-' */
+	if (filename != null && strcmp(filename, "-") == 0)
+		filename = null;
+	if ((r = archive_read_open_file(a, filename, 10240)) != 0)
+	    die("%s\n", archive_error_string(a));
+
+	for (;;)
+	{
+	    r = archive_read_next_header(a, &entry);
+	    if (r == ARCHIVE_EOF)
+		break;
+	    if (r != ARCHIVE_OK)
+		die("%s\n", archive_error_string(a));
+
+	    const char * pathname = archive_entry_pathname(entry);
+	    int m = archive_entry_mode(entry);
+
+	    if (AE_ISREG(m)) extract_file(pathname, a, entry);
+	    else if (AE_ISDIR(m)) extract_dir(pathname, entry);
+	    else if (AE_ISLNK(m)) extract_symlink(pathname, entry);
+	    else if (AEX_ISHL(m)) extract_hardlink(pathname, entry);
+	    else /* skipping */ { ; }
+#if 0
+	    warn("name: %s, mode: %x -- %s (%d)",
+		 archive_entry_pathname(entry), m, s, m & AE_IFMT);
+#endif
 	}
 	archive_read_close(a);
 	archive_read_finish(a);
 }
 
+static void doparents(const char * name)
+{
+    // single element cache for last path...
+    return;
+}
+
+static void writefully(int fd, char * buf, int len)
+{
+    write(fd, buf, len); // XXX
+}
+
+static void extract_file(const char * name, struct archive * a,
+			 struct archive_entry * entry)
+{
+    doparents(name);
+    int fd = open(name, O_WRONLY|O_CREAT|O_TRUNC, 0644); // XXX permissions
+    if (fd < 0)
+	die("open('%s') for writing:", name);
+
+    char buff[4096];
+    int len = archive_read_data(a, buff, sizeof buff);
+    while (len > 0) {
+	writefully(fd, buff, len);
+	len = archive_read_data(a, buff, sizeof buff);
+    }
+    if (len < 0)
+	die("Error reading input archive:");
+}
+
+static void extract_dir(const char * name, struct archive_entry * entry)
+{
+    struct stat st;
+
+    if (stat(name, &st) != 0) {
+	if (! S_ISDIR(st.st_mode))
+	    die("Path '%s' exists but is not a directory\n");
+	return;
+    }
+    doparents(name);
+
+    if (mkdir(name, 0755) < 0)
+	die("mkdir('%s'):", name);
+}
+
+static void extract_symlink(const char * name, struct archive_entry * entry)
+{
+    doparents(name);
+}
+
+static void extract_hardlink(const char * name, struct archive_entry * entry)
+{
+    doparents(name);
+}
+
+
+#if 0
 #if WIN32
 
 /* unused, but defined functions -- maybe cleaned up later ? */
-
+#if 0
 int mkdev(void) { return -1; }
 int minor(void) { return -1; }
 int major(void) { return -1; }
-
+#endif
+#endif
 #endif
 
