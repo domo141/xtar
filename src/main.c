@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sun 07 Jun 2009 11:40:18 EEST too
+ * Last modified: Sun 07 Jun 2009 13:24:04 EEST too
  */
 
 #include <string.h>
@@ -244,9 +244,13 @@ static void extract_dir(const char * name, struct archive_entry * entry)
 	return;
     }
     doparents(name);
-
+#if WIN32
+    if (mkdir(name) < 0)
+	die("mkdir('%s'):", name);
+#else
     if (mkdir(name, 0755) < 0)
 	die("mkdir('%s'):", name);
+#endif
 }
 
 static void extract_symlink(const char * name, struct archive_entry * entry)
