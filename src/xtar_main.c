@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sun 14 Jun 2009 17:37:03 EEST too
+ * Last modified: Sun 14 Jun 2009 18:47:51 EEST too
  */
 
 #include <string.h>
@@ -31,6 +31,8 @@ struct {
     const char * linkfile;
     FILE * namefh;
     FILE * linkfh;
+    size_t filesize;
+    size_t bytesread;
 } G;
 
 void init_G(const char * pn)
@@ -93,6 +95,20 @@ static void handle_args(int argc, char ** argv)
 	usage("too many arguments");
 }
 
+static void getfilesize(void)
+{
+    struct stat st;
+    size_t size;
+
+    if (! G.filename) {
+	G.filesize = 0;
+	return;
+    }
+    if (stat(G.filename, &st) < 0)
+	die("stat('%s') failed:", G.filename);
+    G.filesize = st.st_size;
+}
+
 static void extract_file(const char *, struct archive *,struct archive_entry *);
 static void extract_dir(const char * name, struct archive_entry * entry);
 static void extract_symlink(const char * name, struct archive_entry * entry);
@@ -130,6 +146,7 @@ int main(int argc, char * argv[])
     /* read from stdin in case filename == '-' */
     if (G.filename != null && strcmp(G.filename, "-") == 0)
 	G.filename = null;
+    getfilesize();
     if ((r = archive_read_open_file(a, G.filename, 10240)) != 0)
 	die("%s\n", archive_error_string(a));
 
@@ -166,6 +183,7 @@ int main(int argc, char * argv[])
     }
     archive_read_close(a);
     archive_read_finish(a);
+    write(1, "\n", 1);
 }
 
 static void extract_file(const char * name, struct archive * a,
@@ -186,6 +204,7 @@ static void extract_file(const char * name, struct archive * a,
     }
     if (len < 0)
 	die("Error reading input archive:");
+    close(fd);
 }
 
 static void extract_dir(const char * name, struct archive_entry * entry)
@@ -201,6 +220,10 @@ static void extract_dir(const char * name, struct archive_entry * entry)
 	return;
     }
     doparents(name);
+
+    if (stat(name, &st) == 0 && S_ISDIR(st.st_mode))
+	return;
+
 #if WIN32
     if (mkdir(name) < 0)
 	die("mkdir('%s'):", name);
@@ -226,6 +249,36 @@ static void extract_hardlink(const char * name, struct archive_entry * entry)
     if (G.linkfh)
 	fprintf(G.linkfh, "%s => %s\n", name, archive_entry_hardlink(entry));
 }
+
+
+/* ... */
+
+static void output_dots(int l)
+{
+    static int prevv = -1;
+    static char * nums = "0123456789!";
+    G.bytesread += l;
+    int currv = G.bytesread / (G.filesize / 50);
+    //printf("%d (%d %d)\n", l, prevv, currv);
+    if (prevv != currv) {
+	prevv = currv;
+	if ( (currv % 5) == 0)
+	    write(1, nums + currv / 5, 1);
+	else
+	    write(1, ".", 1);
+    }
+}
+
+#undef read
+ssize_t wrapped_read(int fd, void * buf, size_t len)
+{
+    int l = read(fd, buf, len);
+    //printf("fd: %d, len %d -> %d\n", fd, len, l);
+    if (G.filesize > 1000 * 1000 && l > 0)
+	output_dots(l);
+    return l;
+}
+
 
 #if 0
 #if WIN32

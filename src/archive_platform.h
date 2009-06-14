@@ -8,7 +8,7 @@
  *	    All rights reserved
  *
  * Created: Wed 27 May 2009 20:48:29 EEST too
- * Last modified: Sun 07 Jun 2009 10:34:15 EEST too
+ * Last modified: Sun 14 Jun 2009 17:48:32 EEST too
  */
 
 /* stuff from original archive_platform.h, with extras and tunes */
@@ -70,6 +70,12 @@ typedef unsigned int gid_t;
 #define mkdev(maj,min) ((0xff00 & ((maj)<<8))|(0xffff00ff & (min)))
 
 #endif /* WIN32 */
+
+/* wrappers !!! */
+
+#include <unistd.h>
+#define read(fd, buf, len) wrapped_read(fd, buf, len)
+ssize_t wrapped_read(int fd, void * buf, size_t len);
 
 
 
