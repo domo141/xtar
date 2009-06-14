@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sun 14 Jun 2009 17:23:31 EEST too
+ * Last modified: Sun 14 Jun 2009 17:34:21 EEST too
  */
 
 #include <string.h>
@@ -147,6 +147,11 @@ int main(int argc, char * argv[])
 
 	const char * pathname = archive_entry_pathname(entry);
 	int m = archive_entry_mode(entry);
+
+	while (*pathname == '/')
+	    pathname++;
+	if (*pathname == 0)
+	    continue;
 
 	if (AE_ISREG(m)) extract_file(pathname, a, entry);
 	else if (AE_ISDIR(m)) extract_dir(pathname, entry);
