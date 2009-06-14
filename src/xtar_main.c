@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sun 14 Jun 2009 17:34:21 EEST too
+ * Last modified: Sun 14 Jun 2009 17:37:03 EEST too
  */
 
 #include <string.h>
@@ -115,10 +115,6 @@ int main(int argc, char * argv[])
 	if (G.linkfh == null)
 	    die("fopen('%s') failed:", G.linkfile);
     }
-    if (G.xdir) {
-	if (chdir(G.xdir) < 0) // XXX check windows operation
-	    die("chdir('%s') failed:", G.xdir);
-    }
 
     struct archive * a;
     struct archive_entry * entry;
@@ -136,6 +132,11 @@ int main(int argc, char * argv[])
 	G.filename = null;
     if ((r = archive_read_open_file(a, G.filename, 10240)) != 0)
 	die("%s\n", archive_error_string(a));
+
+    if (G.xdir) {
+	if (chdir(G.xdir) < 0) // XXX check windows operation
+	    die("chdir('%s') failed:", G.xdir);
+    }
 
     for (;;)
     {
