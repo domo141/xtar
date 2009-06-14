@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sun 07 Jun 2009 22:17:32 EEST too
+ * Last modified: Sun 14 Jun 2009 17:23:31 EEST too
  */
 
 #include <string.h>
@@ -98,7 +98,6 @@ static void extract_dir(const char * name, struct archive_entry * entry);
 static void extract_symlink(const char * name, struct archive_entry * entry);
 static void extract_hardlink(const char * name, struct archive_entry * entry);
 
-
 int main(int argc, char * argv[])
 {
     init_G(argv[0]);
@@ -166,6 +165,8 @@ int main(int argc, char * argv[])
 static void extract_file(const char * name, struct archive * a,
 			 struct archive_entry * entry)
 {
+    (void)entry;
+    if (G.namefh) fprintf(G.namefh, "%s\n", name);
     doparents(name);
     int fd = open(name, O_WRONLY|O_CREAT|O_TRUNC, 0644); // XXX permissions
     if (fd < 0)
@@ -184,8 +185,11 @@ static void extract_file(const char * name, struct archive * a,
 static void extract_dir(const char * name, struct archive_entry * entry)
 {
     struct stat st;
+    (void)entry;
 
-    if (stat(name, &st) != 0) {
+    if (G.namefh) fprintf(G.namefh, "%s/\n", name);
+
+    if (stat(name, &st) == 0) {
 	if (! S_ISDIR(st.st_mode))
 	    die("Path '%s' exists but is not a directory\n");
 	return;
@@ -202,14 +206,20 @@ static void extract_dir(const char * name, struct archive_entry * entry)
 
 static void extract_symlink(const char * name, struct archive_entry * entry)
 {
-    doparents(name);
+    if (G.namefh) fprintf(G.namefh, "%s@\n", name);
+    //doparents(name);
+    if (G.linkfh)
+	fprintf(G.linkfh, "%s -> %s\n", name, archive_entry_symlink(entry));
+
 }
 
 static void extract_hardlink(const char * name, struct archive_entry * entry)
 {
-    doparents(name);
+    if (G.namefh) fprintf(G.namefh, "%s#\n", name);
+    //doparents(name);
+    if (G.linkfh)
+	fprintf(G.linkfh, "%s => %s\n", name, archive_entry_hardlink(entry));
 }
-
 
 #if 0
 #if WIN32
