@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sun 14 Jun 2009 18:47:51 EEST too
+ * Last modified: Mon 15 Jun 2009 13:57:50 EEST too
  */
 
 #include <string.h>
@@ -41,11 +41,13 @@ void init_G(const char * pn)
     G.progname = pn;
 }
 
+#include "version.h"
+
 static void usage(const char * format, ...)
 {
     if (format) {
 	va_list ap;
-	fprintf(stderr, "\n%s: ", G.progname);
+	fprintf(stderr, "\n%s (%s): ", G.progname, VERSION);
 	va_start(ap, format);
 	vfprintf(stderr, format, ap);
 	va_end(ap);

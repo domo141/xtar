@@ -1,8 +1,10 @@
 
-# 'all' -target will rebuild everything for scratch (to be sure)
+# 'all' -target will rebuild everything from scratch (to be sure)
 
-all:	distclean
+all:	distclean src/version.h
 	@sed -n '/^all.sh:/,/^ *$$/ p' Makefile | tail -n +3 | sh -eux
+
+.NOTPARALLEL:
 
 all.sh:
 	exit 1 # this target is not to be run.
@@ -18,9 +20,17 @@ all.sh:
 	make -C src $goals $CC_W32
 
 
+src/version.h: README_AND_COPYRIGHT
+	awk '/^xtar version/ {	print "#define VERSION \"" $$3 "\""; \
+				print "#define VERDATE \"" $$4 "\""} ' $< > $@
+
 clean distclean: always
 	make -C src $@
-	rm -f *~
+	rm -f *~ src/version.h
 
+targz: distclean
+	cd .. && ln -s xtar xtar-0.96
+	cd .. && trap 'rm xtar-0.96' 0 \
+		&& tar --exclude .git -zhcvf xtar-0.96.tar.gz xtar-0.96
 
 .PHONY: always
