@@ -1,10 +1,13 @@
 
 # 'all' -target will rebuild everything from scratch (to be sure)
 
+VERSION = 0.96
+VERDATE = 2009-06-15
+
+# in many targets, distclean is added as dependencies to avoid parallelism
+
 all:	distclean src/version.h
 	@sed -n '/^all.sh:/,/^ *$$/ p' Makefile | tail -n +3 | sh -eux
-
-.NOTPARALLEL:
 
 all.sh:
 	exit 1 # this target is not to be run.
@@ -20,15 +23,23 @@ all.sh:
 	make -C src $goals $CC_W32
 
 
-src/version.h: README_AND_COPYRIGHT
-	awk '/^xtar version/ {	print "#define VERSION \"" $$3 "\""; \
-				print "#define VERDATE \"" $$4 "\""} ' $< > $@
+src/version.h: distclean Makefile
+	echo '#define VERSION "$(VERSION)":#define VERDATE "$(VERDATE)"' \
+		| tr : \\012 > $@
+
+README_AND_COPYRIGHT: Makefile
+	echo '/^xtar version /s/.*/xtar version $(VERSION) $(VERDATE)/:wq:' \
+		| tr : \\012 | ed $@
 
 clean distclean: always
 	make -C src $@
 	rm -f *~ src/version.h
 
-targz: distclean
+gitlog: distclean
+	git log --name-status > $@
+
+
+targz: distclean gitlog README_AND_COPYRIGHT
 	cd .. && ln -s xtar xtar-0.96
 	cd .. && trap 'rm xtar-0.96' 0 \
 		&& tar --exclude .git -zhcvf xtar-0.96.tar.gz xtar-0.96
