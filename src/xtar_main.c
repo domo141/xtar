@@ -7,12 +7,13 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Mon 15 Jun 2009 13:57:50 EEST too
+ * Last modified: Tue 16 Jun 2009 16:28:44 EEST too
  */
 
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include "archive_platform.h"
 #include "archive.h"
@@ -168,7 +169,7 @@ int main(int argc, char * argv[])
 	const char * pathname = archive_entry_pathname(entry);
 	int m = archive_entry_mode(entry);
 
-	while (*pathname == '/')
+	while (*pathname == '/' || *pathname == '.')
 	    pathname++;
 	if (*pathname == 0)
 	    continue;
@@ -191,7 +192,11 @@ int main(int argc, char * argv[])
 static void extract_file(const char * name, struct archive * a,
 			 struct archive_entry * entry)
 {
-    (void)entry;
+    if (archive_entry_hardlink(entry)) {
+	extract_hardlink(name, entry);
+	return;
+    }
+
     if (G.namefh) fprintf(G.namefh, "%s\n", name);
     doparents(name);
     int fd = open(name, O_WRONLY|O_CREAT|O_TRUNC, 0644); // XXX permissions
@@ -222,15 +227,15 @@ static void extract_dir(const char * name, struct archive_entry * entry)
 	return;
     }
     doparents(name);
-
+#if 0
     if (stat(name, &st) == 0 && S_ISDIR(st.st_mode))
 	return;
-
+#endif
 #if WIN32
-    if (mkdir(name) < 0)
+    if (mkdir(name) < 0 && errno != EEXIST)
 	die("mkdir('%s'):", name);
 #else
-    if (mkdir(name, 0755) < 0)
+    if (mkdir(name, 0755) < 0 && errno != EEXIST)
 	die("mkdir('%s'):", name);
 #endif
 }
