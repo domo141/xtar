@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Tue 16 Jun 2009 16:28:44 EEST too
+ * Last modified: Tue 16 Jun 2009 16:57:08 EEST too
  */
 
 #include <string.h>
@@ -174,6 +174,12 @@ int main(int argc, char * argv[])
 	if (*pathname == 0)
 	    continue;
 
+#if WIN32
+	/* on windows, do not extract files with ':' in file path name */
+	if (strchr(pathname, ':') != null)
+	    continue;
+#endif
+
 	if (AE_ISREG(m)) extract_file(pathname, a, entry);
 	else if (AE_ISDIR(m)) extract_dir(pathname, entry);
 	else if (AE_ISLNK(m)) extract_symlink(pathname, entry);
@@ -263,7 +269,7 @@ static void extract_hardlink(const char * name, struct archive_entry * entry)
 static void output_dots(int l)
 {
     static int prevv = -1;
-    static char * nums = "0123456789!";
+    static char * nums = ".9876543210";
     G.bytesread += l;
     int currv = G.bytesread / (G.filesize / 50);
     //printf("%d (%d %d)\n", l, prevv, currv);
