@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Tue 16 Jun 2009 16:57:08 EEST too
+ * Last modified: Wed 17 Jun 2009 09:18:44 EEST too
  */
 
 #include <string.h>
@@ -150,7 +150,8 @@ int main(int argc, char * argv[])
     if (G.filename != null && strcmp(G.filename, "-") == 0)
 	G.filename = null;
     getfilesize();
-    if ((r = archive_read_open_file(a, G.filename, 10240)) != 0)
+    /*if ((r = archive_read_open_file(a, G.filename, 10240)) != 0) */
+    if ((r = archive_read_open_file(a, G.filename, 81920)) != 0)
 	die("%s\n", archive_error_string(a));
 
     if (G.xdir) {
@@ -195,6 +196,10 @@ int main(int argc, char * argv[])
     write(1, "\n", 1);
 }
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 static void extract_file(const char * name, struct archive * a,
 			 struct archive_entry * entry)
 {
@@ -205,11 +210,12 @@ static void extract_file(const char * name, struct archive * a,
 
     if (G.namefh) fprintf(G.namefh, "%s\n", name);
     doparents(name);
-    int fd = open(name, O_WRONLY|O_CREAT|O_TRUNC, 0644); // XXX permissions
+    int fd = open(name, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY, 0644);
     if (fd < 0)
 	die("open('%s') for writing:", name);
 
-    char buff[4096];
+    /*char buff[4096]; */
+    char buff[32768];
     int len = archive_read_data(a, buff, sizeof buff);
     while (len > 0) {
 	writefully(fd, buff, len);
