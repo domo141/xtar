@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Wed 17 Jun 2009 09:18:44 EEST too
+ * Last modified: Mon 22 Jun 2009 10:10:25 EEST too
  */
 
 #include <string.h>
@@ -101,7 +101,6 @@ static void handle_args(int argc, char ** argv)
 static void getfilesize(void)
 {
     struct stat st;
-    size_t size;
 
     if (! G.filename) {
 	G.filesize = 0;
@@ -203,14 +202,21 @@ int main(int argc, char * argv[])
 static void extract_file(const char * name, struct archive * a,
 			 struct archive_entry * entry)
 {
+    int perm;
+
     if (archive_entry_hardlink(entry)) {
 	extract_hardlink(name, entry);
 	return;
     }
 
+    if (archive_entry_mode(entry) & S_IXUSR)
+	perm = 0755;
+    else
+	perm = 0644;
+
     if (G.namefh) fprintf(G.namefh, "%s\n", name);
     doparents(name);
-    int fd = open(name, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY, 0644);
+    int fd = open(name, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY, perm);
     if (fd < 0)
 	die("open('%s') for writing:", name);
 
