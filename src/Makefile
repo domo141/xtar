@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Sun 07 Jun 2009 22:19:49 EEST too
+# Last modified: Tue 25 Aug 2009 19:12:16 EEST too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -30,7 +30,7 @@ OBJ_DYN = xtar_main.o xtar_util.o $(LA_OBJ)
 
 OBJ_UX = $(OBJ:%=obj_ux/%)
 OBJ_UX_DYN = $(OBJ_DYN:%=obj_ux/%)
-OBJ_W32 = $(OBJ:%=obj_w32/%)
+OBJ_W32 = $(OBJ:%=obj_w32/%) obj_w32/xtar_w32lib.o
 
 TRG_UX = xtar
 TRG_UX_DYN = xtar_dynamic

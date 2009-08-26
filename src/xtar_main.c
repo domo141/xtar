@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Mon 22 Jun 2009 10:10:25 EEST too
+ * Last modified: Tue 25 Aug 2009 19:11:37 EEST too
  */
 
 #include <string.h>
@@ -20,6 +20,10 @@
 #include "archive_entry.h"
 
 #include "xtar_util.h"
+
+#if WIN32
+#include "xtar_w32lib.h"
+#endif
 
 enum { false = 0, true = 1 };
 #define null ((void *)0)
@@ -262,17 +266,45 @@ static void extract_symlink(const char * name, struct archive_entry * entry)
 {
     if (G.namefh) fprintf(G.namefh, "%s@\n", name);
     //doparents(name);
-    if (G.linkfh)
-	fprintf(G.linkfh, "%s -> %s\n", name, archive_entry_symlink(entry));
-
+    if (G.linkfh) {
+	const char * linkname = archive_entry_symlink(entry);
+#if WIN32
+	// hack for the usual case: path/to/FOO -> foo
+	const char * basename = strrchr(name, '/');
+	if (basename == null) basename = name;
+	if (strcasecmp(basename, linkname) != 0)
+#endif
+	    fprintf(G.linkfh, "%s -> %s\n", name, linkname);
+    }
 }
 
 static void extract_hardlink(const char * name, struct archive_entry * entry)
 {
     if (G.namefh) fprintf(G.namefh, "%s#\n", name);
-    //doparents(name);
+    doparents(name);
+    const char * linkname = archive_entry_hardlink(entry);
+#if WIN32
+    DWORD error = link_w32(linkname, name);
+    if (error != 0) {
+	if (error == ERROR_FILE_EXISTS)
+	    warn("Can not create hard link '%s' => '%s': destination file exists",
+		 name, linkname);
+	else
+	    die("link('%s', '%s'):", linkname, name);
+    }
+#else
+    if (link(linkname, name) != 0) {
+	if (errno == EEXIST)
+	    warn("Can not create hard link '%s' => '%s': destination file exists",
+		 name, linkname);
+	else
+	    die("link('%s', '%s'):", linkname, name);
+    }
+#endif
+#if 0
     if (G.linkfh)
 	fprintf(G.linkfh, "%s => %s\n", name, archive_entry_hardlink(entry));
+#endif
 }
 
 
@@ -281,7 +313,7 @@ static void extract_hardlink(const char * name, struct archive_entry * entry)
 static void output_dots(int l)
 {
     static int prevv = -1;
-    static char * nums = ".9876543210";
+    static const char * nums = ".9876543210";
     G.bytesread += l;
     int currv = G.bytesread / (G.filesize / 50);
     //printf("%d (%d %d)\n", l, prevv, currv);

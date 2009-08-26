@@ -1,8 +1,8 @@
 
 # 'all' -target will rebuild everything from scratch (to be sure)
 
-VERSION = 0.96
-VERDATE = 2009-06-15
+VERSION = 0.97
+VERDATE = 2009-07-33
 
 # in many targets, distclean is added as dependencies to avoid parallelism
 
@@ -40,8 +40,8 @@ gitlog: distclean
 
 
 targz: distclean gitlog README_AND_COPYRIGHT
-	cd .. && ln -s xtar xtar-0.96
-	cd .. && trap 'rm xtar-0.96' 0 \
-		&& tar --exclude .git -zhcvf xtar-0.96.tar.gz xtar-0.96
+	cd .. && ln -s xtar xtar-$(VERSION)
+	cd .. && trap 'rm xtar-$(VERSION)' 0 \
+		&& tar --exclude .git -zhcvf xtar-$(VERSION).tar.gz xtar-$(VERSION)
 
 .PHONY: always
