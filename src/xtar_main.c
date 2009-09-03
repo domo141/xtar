@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Tue 25 Aug 2009 19:11:37 EEST too
+ * Last modified: Thu 0xi34 Sep 2009 19:04:43 EEST too
  */
 
 #include <string.h>
@@ -232,7 +232,7 @@ static void extract_file(const char * name, struct archive * a,
 	len = archive_read_data(a, buff, sizeof buff);
     }
     if (len < 0)
-	die("Error reading input archive:");
+	die("Error reading input archive: %s", archive_error_string(a));
     close(fd);
 }
 
