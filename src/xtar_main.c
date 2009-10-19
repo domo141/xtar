@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Thu 0xi34 Sep 2009 19:04:43 EEST too
+ * Last modified: Mon 19 Oct 2009 21:06:59 EEST too
  */
 
 #include <string.h>
@@ -36,6 +36,7 @@ struct {
     const char * linkfile;
     FILE * namefh;
     FILE * linkfh;
+    size_t seekto;
     size_t filesize;
     size_t bytesread;
 } G;
@@ -58,8 +59,8 @@ static void usage(const char * format, ...)
 	va_end(ap);
 	fputc('\n', stderr);
     }
-    fprintf(stderr, "\nUsage: %s [-C <dir>] [-n <file>] [-l <file>] "
-	    "tarfile\n\n", G.progname);
+    fprintf(stderr, "\nUsage: %s [-C <dir>] [-S seekpos[:length]] [-n <file>] "
+	    " [-l <file>] tarfile\n\n", G.progname);
     exit(1);
 }
 
@@ -77,6 +78,8 @@ static char * get_next_arg(int * c, char *** v, const char * umsg)
 
 static void handle_args(int argc, char ** argv)
 {
+    char * seekarg = null;
+
     while (argv[0] && argv[0][0] == '-'
 	   && argv[0][1] != '\0'
 	   && (argv[0][1] == '-' || argv[0][2] == '\0'))
@@ -89,6 +92,7 @@ static void handle_args(int argc, char ** argv)
 	case 'C': G.xdir = get_next_arg(&argc, &argv, ARGREQ("C")); break;
 	case 'n': G.namefile = get_next_arg(&argc, &argv, ARGREQ("n")); break;
 	case 'l': G.linkfile = get_next_arg(&argc, &argv, ARGREQ("l")); break;
+	case 'S': seekarg = get_next_arg(&argc, &argv, ARGREQ("S")); break;
 	default:
 	    usage("%s: unknown option.", argv[0]);
 	}
@@ -98,6 +102,16 @@ static void handle_args(int argc, char ** argv)
     if (G.filename == null)
 	usage("'tarfile' missing");
 
+    if (seekarg) {
+	char * p;
+
+	G.seekto = strtol(seekarg, &p, 10);
+	if (*p == ':')
+	    G.filesize = strtol(p + 1, &p, 10);
+
+	if (*p != '\0')
+	    usage("'%s': illegal seek[/len] format", seekarg);
+    }
     if (argc > 1)
 	usage("too many arguments");
 }
@@ -106,13 +120,16 @@ static void getfilesize(void)
 {
     struct stat st;
 
-    if (! G.filename) {
-	G.filesize = 0;
-	return;
-    }
     if (stat(G.filename, &st) < 0)
 	die("stat('%s') failed:", G.filename);
-    G.filesize = st.st_size;
+
+    /* unfortunately st.st_size not unsigned... */
+    if (G.filesize + G.seekto > st.st_size)
+	die("Input file size %d smaller than size given for '-S'\n",
+	    st.st_size);
+
+    if (G.filesize == 0)
+	G.filesize = st.st_size - G.seekto;
 }
 
 static void extract_file(const char *, struct archive *,struct archive_entry *);
@@ -140,7 +157,7 @@ int main(int argc, char * argv[])
 
     struct archive * a;
     struct archive_entry * entry;
-    int r;
+    int r, fd;
 
     a = archive_read_new();
 
@@ -150,11 +167,31 @@ int main(int argc, char * argv[])
     archive_read_support_compression_bzip2(a);
 
     /* read from stdin in case filename == '-' */
-    if (G.filename != null && strcmp(G.filename, "-") == 0)
+    if (G.filename != null && strcmp(G.filename, "-") == 0) {
 	G.filename = null;
-    getfilesize();
+	if (G.seekto)
+	    die("No seek supported when input from stdin\n");
+    }
+    else
+	getfilesize();
+
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+    if (G.filename) {
+	fd = open(G.filename, O_RDONLY | O_BINARY);
+	if (fd < 0)
+	    die("Failed to open tar file '%s':");
+
+	if (G.seekto) {
+	    if (lseek(fd, G.seekto, SEEK_SET) < 0)
+		die("seek('%d') failed:", G.seekto);
+	}
+    }
+    else fd = 1;
+
     /*if ((r = archive_read_open_file(a, G.filename, 10240)) != 0) */
-    if ((r = archive_read_open_file(a, G.filename, 81920)) != 0)
+    if ((r = archive_read_open_fd(a, fd, 81920)) != 0)
 	die("%s\n", archive_error_string(a));
 
     if (G.xdir) {
@@ -310,11 +347,11 @@ static void extract_hardlink(const char * name, struct archive_entry * entry)
 
 /* ... */
 
-static void output_dots(int l)
+static void output_dots(void)
 {
     static int prevv = -1;
     static const char * nums = ".9876543210";
-    G.bytesread += l;
+
     int currv = G.bytesread / (G.filesize / 50);
     //printf("%d (%d %d)\n", l, prevv, currv);
     if (prevv != currv) {
@@ -329,10 +366,16 @@ static void output_dots(int l)
 #undef read
 ssize_t wrapped_read(int fd, void * buf, size_t len)
 {
-    int l = read(fd, buf, len);
+    size_t maxlen = G.filesize - G.bytesread;
+    int l;
+    if (maxlen == 0)
+	return 0;
+    l = read(fd, buf, len > maxlen? maxlen: len);
+
+    G.bytesread += l;
     //printf("fd: %d, len %d -> %d\n", fd, len, l);
-    if (G.filesize > 1000 * 1000 && l > 0)
-	output_dots(l);
+    if (G.filesize > 5 * 1000 * 1000 && l > 0)
+	output_dots();
     return l;
 }
 
