@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Mon 19 Oct 2009 21:06:59 EEST too
+ * Last modified: Tue 20 Oct 2009 14:56:30 EEST too
  */
 
 #include <string.h>
@@ -306,13 +306,26 @@ static void extract_symlink(const char * name, struct archive_entry * entry)
     if (G.linkfh) {
 	const char * linkname = archive_entry_symlink(entry);
 #if WIN32
-	// hack for the usual case: path/to/FOO -> foo
+	// hack for the usual case: path/to/FOO -> foo (caseinsensitive fs)
 	const char * basename = strrchr(name, '/');
 	if (basename == null) basename = name;
 	if (strcasecmp(basename, linkname) != 0)
 #endif
 	    fprintf(G.linkfh, "%s -> %s\n", name, linkname);
     }
+#if !WIN32
+    else {
+	const char * linkname = archive_entry_symlink(entry);
+	/* TODO: absolute-> relative path, excess ../ removal XXX */
+	if (symlink(linkname, name) != 0) {
+	    if (errno == EEXIST)
+		warn("Can not create symbolic link '%s' -> '%s': "
+		     "destination file exists", name, linkname);
+	    else
+		die("symlink('%s', '%s'):", linkname, name);
+	}
+    }
+#endif
 }
 
 static void extract_hardlink(const char * name, struct archive_entry * entry)

@@ -1,8 +1,8 @@
 
 # 'all' -target will rebuild everything from scratch (to be sure)
 
-VERSION = 0.98
-VERDATE = 2009-10-19
+VERSION = 0.99
+VERDATE = 2009-10-20
 
 # in many targets, distclean is added as dependencies to avoid parallelism
 
