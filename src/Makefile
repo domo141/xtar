@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Tue 25 Aug 2009 19:12:16 EEST too
+# Last modified: Tue 20 Oct 2009 22:13:55 EEST too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -25,8 +25,10 @@ LA_OBJ = archive_check_magic.o archive_entry.o archive_read.o \
 BZ2_OBJ = bzlib_partial.o crctable.o decompress.o huffman.o randtable.o
 Z_OBJ = inflate.o inffast.o inftrees.o crc32.o adler32.o zutil.o
 
-OBJ = xtar_main.o xtar_util.o $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ) 
-OBJ_DYN = xtar_main.o xtar_util.o $(LA_OBJ)
+XTAR_OBJ = xtar_main.o xtar_util.o relpath.o
+
+OBJ =  $(XTAR_OBJ) $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ) 
+OBJ_DYN = $(XTAR_OBJ) $(LA_OBJ)
 
 OBJ_UX = $(OBJ:%=obj_ux/%)
 OBJ_UX_DYN = $(OBJ_DYN:%=obj_ux/%)
@@ -44,7 +46,7 @@ all: $(TRG_UX) always
 
 TRGS_ALL = $(TRG_UX) $(TRG_UX_DYN) $(TRG_W32)
 
-LFLAGS = -s
+LFLAGS =
 LFLAGS_DYN = -s -lz -lbz2
 
 $(TRG_UX): $(OBJ_UX)
@@ -78,7 +80,7 @@ WARN1?= -W -Wwrite-strings -Wcast-qual -Wshadow #-Wconversion
 
 WOPTS=	$(WARN0) $(WARN1)
 
-CFLAGS=-O2 -I. -I..
+CFLAGS=-O2 -I. -I.. -ggdb
 C99FLAGS=-std=gnu99
 
 OPTS= $(CFLAGS) $(C99FLAGS) $(WOPTS)

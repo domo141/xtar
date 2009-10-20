@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Tue 20 Oct 2009 14:56:30 EEST too
+ * Last modified: Tue 20 Oct 2009 22:59:57 EEST too
  */
 
 #include <string.h>
@@ -20,6 +20,8 @@
 #include "archive_entry.h"
 
 #include "xtar_util.h"
+
+#include "relpath.h"
 
 #if WIN32
 #include "xtar_w32lib.h"
@@ -210,8 +212,14 @@ int main(int argc, char * argv[])
 	const char * pathname = archive_entry_pathname(entry);
 	int m = archive_entry_mode(entry);
 
-	while (*pathname == '/' || *pathname == '.')
+	char buf[4096];
+	pathname = cleandotrefs(pathname, buf, 4096);
+	if (pathname == null)
+	    continue;
+	if (pathname[0] == '/')
 	    pathname++;
+	while (pathname[0] == '.' && pathname[1] == '.' &&  pathname[2] == '/')
+	    pathname += 3;
 	if (*pathname == 0)
 	    continue;
 
@@ -316,7 +324,7 @@ static void extract_symlink(const char * name, struct archive_entry * entry)
 #if !WIN32
     else {
 	const char * linkname = archive_entry_symlink(entry);
-	/* TODO: absolute-> relative path, excess ../ removal XXX */
+	linkname = relpath(name, linkname);
 	if (symlink(linkname, name) != 0) {
 	    if (errno == EEXIST)
 		warn("Can not create symbolic link '%s' -> '%s': "
