@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Tue 20 Oct 2009 22:59:57 EEST too
+ * Last modified: Thu 22 Oct 2009 19:30:08 EEST too
  */
 
 #include <string.h>
@@ -134,6 +134,18 @@ static void getfilesize(void)
 	G.filesize = st.st_size - G.seekto;
 }
 
+static const char * filename_rooted(const char * pathname, char buf[RP_BUFSIZ])
+{
+    pathname = cleandotrefs(pathname, buf);
+    if (pathname == null)
+	return null;
+    if (pathname[0] == '/')
+	pathname++;
+    while (pathname[0] == '.' && pathname[1] == '.' &&  pathname[2] == '/')
+	pathname += 3;
+    return pathname;
+}
+
 static void extract_file(const char *, struct archive *,struct archive_entry *);
 static void extract_dir(const char * name, struct archive_entry * entry);
 static void extract_symlink(const char * name, struct archive_entry * entry);
@@ -203,24 +215,20 @@ int main(int argc, char * argv[])
 
     for (;;)
     {
+	const char * pathname;
+	char buf[RP_BUFSIZ];
+	int m;
+
 	r = archive_read_next_header(a, &entry);
 	if (r == ARCHIVE_EOF)
 	    break;
 	if (r != ARCHIVE_OK)
 	    die("%s\n", archive_error_string(a));
 
-	const char * pathname = archive_entry_pathname(entry);
-	int m = archive_entry_mode(entry);
+	pathname = filename_rooted(archive_entry_pathname(entry), buf);
+	m = archive_entry_mode(entry);
 
-	char buf[4096];
-	pathname = cleandotrefs(pathname, buf, 4096);
-	if (pathname == null)
-	    continue;
-	if (pathname[0] == '/')
-	    pathname++;
-	while (pathname[0] == '.' && pathname[1] == '.' &&  pathname[2] == '/')
-	    pathname += 3;
-	if (*pathname == 0)
+	if (pathname == null || *pathname == 0)
 	    continue;
 
 #if WIN32
@@ -310,7 +318,6 @@ static void extract_dir(const char * name, struct archive_entry * entry)
 static void extract_symlink(const char * name, struct archive_entry * entry)
 {
     if (G.namefh) fprintf(G.namefh, "%s@\n", name);
-    //doparents(name);
     if (G.linkfh) {
 	const char * linkname = archive_entry_symlink(entry);
 #if WIN32
@@ -323,8 +330,14 @@ static void extract_symlink(const char * name, struct archive_entry * entry)
     }
 #if !WIN32
     else {
-	const char * linkname = archive_entry_symlink(entry);
-	linkname = relpath(name, linkname);
+	const char * linkname;
+	char buf[RP_BUFSIZ];
+
+	linkname = relpath(name, archive_entry_symlink(entry), buf);
+	if (linkname == null || *linkname == '\0')
+	    return; /* XXX error message */
+
+	doparents(name);
 	if (symlink(linkname, name) != 0) {
 	    if (errno == EEXIST)
 		warn("Can not create symbolic link '%s' -> '%s': "
@@ -338,9 +351,15 @@ static void extract_symlink(const char * name, struct archive_entry * entry)
 
 static void extract_hardlink(const char * name, struct archive_entry * entry)
 {
+    const char * linkname;
+    char buf[RP_BUFSIZ];
+
     if (G.namefh) fprintf(G.namefh, "%s#\n", name);
+    linkname = filename_rooted(archive_entry_hardlink(entry), buf);
+    if (linkname == null || *linkname == 0)
+	return; /* XXX error message */
     doparents(name);
-    const char * linkname = archive_entry_hardlink(entry);
+
 #if WIN32
     DWORD error = link_w32(linkname, name);
     if (error != 0) {

@@ -18,7 +18,7 @@
  *	    All rights reserved
  *
  * Created: Tue 20 Oct 2009 18:28:02 EEST too
- * Last modified: Tue 20 Oct 2009 22:57:29 EEST too
+ * Last modified: Thu 22 Oct 2009 19:34:23 EEST too
  */
 
 /* See README_AND_COPYRIGHT for license information */
@@ -26,21 +26,20 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "relpath.h"
 #define null 0
 
-/* clear internal /./, // and /../ from t (if any) */
-/* fixme: return int, false if illegal chars (so to be skipped). */
-const char * cleandotrefs(const char * s, char * buf, int buflen)
+/* clear internal /./, // and /../ from s (if any) */
+const char * cleandotrefs(const char * s, char obuf[RP_BUFSIZ])
 {
-    char * pd;
+    char * pd = obuf;
     int state, other;
-
-    pd = buf;
 
     state = (s[0] == '.')? 1: 0;
     other = 0;
     while (*s)
     {
+	/* fixme: if illegal chars found, return null */
 	switch (state)
 	{
 	case -1:
@@ -67,66 +66,66 @@ const char * cleandotrefs(const char * s, char * buf, int buflen)
 	    }
 	    break;
 	}
-	if (pd - buf >= buflen)
+	if (pd - obuf >= RP_BUFSIZ)
 	    return null;
 	*pd++ = *s++;
     }
     *pd = '\0';
-    return buf;
+    return obuf;
 }
 
 #if !WIN32 /* Not needed for w32 system (for now) */
 
-char * relpath(const char * f, char * t)
+const char * relpath(const char * f, const char * t, char obuf[RP_BUFSIZ])
 {
-    char tbuf[4096];
-    t = cleandotrefs(t, tbuf, 4096);
-
     if (t[0] == '/') {
-	static char relpath[4096];
 	const char * p;
 	char * rpp;
 	int l;
+	char tbuf[RP_BUFSIZ];
+	t = cleandotrefs(t, tbuf);
+
 	/* absolute part */
 	t++;
 	while (t[0] == '.' && t[1] == '.' && t[2] == '/')
-	    t+= 3;
+	    t += 3;
 
-	t[-1] = '\0';
 	/* search common prefix... */
 	while (*f == *t ) {
 	    f++; t++;
 	}
 	f--; t--;
-	/* up to last '/' */
-	while (*t != '/' && *t != '\0') {
+	/* back to last '/' */
+	while (*t != '/') {
 	    f--; t--;
 	}
 	f++; t++;
 
-	rpp = relpath;
+	rpp = obuf;
 	rpp[0] = '\0';
 	p = f;
 	//printf("xxx %s\n", p);
 	while ((p = strchr(p, '/')) != null) {
-	    if (rpp - relpath < sizeof relpath - 20) {
+	    if (rpp - obuf < (ssize_t)sizeof obuf - 20) {
 		rpp[0] = '.'; rpp[1] = '.'; rpp[2] = '/'; rpp[3] = '\0';
 		rpp += 3;
 	    }
 	    p++;
 	}
 	l = strlen(t);
-	if ( (rpp - relpath) + l < sizeof relpath - 2)
+	if ( (rpp - obuf) + l < (ssize_t)sizeof obuf - 2)
 	    memcpy(rpp, t, l + 1);
 	else
 	    strcpy(rpp, "junk"); /* XXX */
 
-	return relpath;
+	return obuf;
     }
     else {
 	/* check that ../../.. is no deeper than 'f' path */
 	int i = 0;
-	char * x = t;
+	const char * x;
+
+	x = t = cleandotrefs(t, obuf);
 	while (x[0] == '.' && x[1] == '.' && x[2] == '/')
 	    x+= 3;
 	if (x != t) {
