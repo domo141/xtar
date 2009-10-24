@@ -1,0 +1,16 @@
+
+644 root root . ../../relpath1 test.tarlist
+644 root root . ../../foo/../relpath2 test.tarlist
+644 root root . ../../relpath4x. test.tarlist
+644 root root . hbar test.tarlist
+
+--- root root . dir1/lfoo1 -> ../../../bar1
+--- root root . dir1/lfoo2 -> /bar2
+--- root root . dir1/lfoo3 -> /bar2/../bar3
+
+--- root root . /dir1/plop -> /dir1/foobar
+
+=== root root . dir2/../../hfoo1 => hbar
+=== root root . dir2/../.././hfoo2 => /../../hbar
+=== root root . dir2/../../////hfoo3 => hbar
+=== root root . dir2/../../x/../hfoo4 => ../../hbar
