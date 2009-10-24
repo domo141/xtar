@@ -1,8 +1,8 @@
 
 # 'all' -target will rebuild everything from scratch (to be sure)
 
-VERSION = 0.991
-VERDATE = 2009-10-20
+VERSION = 1.0
+VERDATE = 2009-10-24
 
 # in many targets, distclean is added as dependencies to avoid parallelism
 
@@ -30,6 +30,14 @@ src/version.h: distclean Makefile
 README_AND_COPYRIGHT: Makefile
 	echo '/^xtar version /s/.*/xtar version $(VERSION) $(VERDATE)/:wq:' \
 		| tr : \\012 | ed $@
+
+install: all
+	@case "$(PREFIX)" in \
+		'') echo Usage: make install PREFIX='<prefix>'; exit 1 ;; \
+		*' '*) echo "'$(PREFIX)' has spaces"; exit 1 ;; esac
+	mkdir -p "$(PREFIX)"/bin "$(PREFIX)"/share/man/man1
+	cp src/xtar "$(PREFIX)"/bin
+	cp xtar.1 "$(PREFIX)"/share/man/man1
 
 clean distclean: always
 	make -C src $@

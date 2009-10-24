@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sat 24 Oct 2009 16:57:58 EEST too
+ * Last modified: Sat 24 Oct 2009 18:05:26 EEST too
  */
 
 #include <string.h>
@@ -55,7 +55,7 @@ static void usage(const char * format, ...)
 {
     if (format) {
 	va_list ap;
-	fprintf(stderr, "\n%s (%s): ", G.progname, VERSION);
+	fprintf(stderr, "\n%s (v%s): ", G.progname, VERSION);
 	va_start(ap, format);
 	vfprintf(stderr, format, ap);
 	va_end(ap);
@@ -252,6 +252,7 @@ int main(int argc, char * argv[])
     archive_read_close(a);
     archive_read_finish(a);
     write(1, "\n", 1);
+    return 0;
 }
 
 #ifndef O_BINARY

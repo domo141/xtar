@@ -1,0 +1,109 @@
+.\" Hey, EMACS: -*- nroff -*-
+.\" 
+.\"	Copyright (c) 2009 Tomi Ollila
+.\"	    All rights reserved
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer
+.\"    in this position and unchanged.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR(S) ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+.\" IN NO EVENT SHALL THE AUTHOR(S) BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+.\" NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+.\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+
+.TH xtar 1 "Oct 24, 2009"
+
+.SH NAME
+xtar \- Extract (compressed) tar files with progress indication with all
+file paths converted to relative inside extraction directory.
+
+
+.SH SYNOPSIS
+.B xtar
+.I [-C <dir>] [-S seekpos[:length]] [-n <file>]  [-l <file>] tarfile
+.br
+
+.SH DESCRIPTION
+
+\fBXtar\fP takes input tar archive file and extracts it to output
+directory.
+
+One-line progress indicator shows how much data there is still to be
+extracted.
+
+Every absolute symbolic link is converted to relative to the destination
+file. In case the relative goes outside of the extraction directory that
+attempt is dropped out of the extraction path.
+
+Likewise, (absolute) hard links are re-rooted to point files inside
+extraction directory.
+
+Current version supports 'gzip' and 'bzip2' uncompression methods. Tar
+file formats supported are those supported by libarchive 2.7.0.
+
+.SH OPTIONS
+.TP
+.B -\fIC <dir>\fP
+Change to directory <dir> for extracting any files.
+.TP
+.B -\fIS <seekpos[:length]>\fP
+Seek to given position before reading any tar input. Read as much as 'length'
+bytes if this part given. Note that when file is '-' (stdin) this option
+needs to be give in format '0:length'.
+.TP
+.B -\fIn <file>\fP
+Write filename (and link destination, if any) for each extracted file.
+.TP
+.B -\fIl <file>\fP
+Instead of extracting symlinks, write link information to given file.
+Note: for Windows this is the only option to store symlink information.
+
+
+.SH EXIT VALUE
+
+xtar exits with 0, unless exits unexpectly. This needs to be fixed. 
+
+.SH COPYRIGHT
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer
+   in this position and unchanged.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR(S) ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE AUTHOR(S) BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+   
+.SH SEE ALSO
+.PD 0
+\fBtar\fP(1),
+\fBstar\fP(1),
+\fBtar\fP(5)
