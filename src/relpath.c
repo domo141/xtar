@@ -18,7 +18,7 @@
  *	    All rights reserved
  *
  * Created: Tue 20 Oct 2009 18:28:02 EEST too
- * Last modified: Thu 22 Oct 2009 19:34:23 EEST too
+ * Last modified: Sat 24 Oct 2009 16:57:43 EEST too
  */
 
 /* See README_AND_COPYRIGHT for license information */
@@ -35,7 +35,7 @@ const char * cleandotrefs(const char * s, char obuf[RP_BUFSIZ])
     char * pd = obuf;
     int state, other;
 
-    state = (s[0] == '.')? 1: 0;
+    state = (s[0] == '.')? 1: (s[0] == '/')? 0: -1;
     other = 0;
     while (*s)
     {
@@ -61,7 +61,7 @@ const char * cleandotrefs(const char * s, char obuf[RP_BUFSIZ])
 	    if (other) {
 		other--;
 		pd -= 4;
-		while (*pd != '/')
+		while (pd != obuf && *pd != '/')
 		    pd--;
 	    }
 	    break;
@@ -79,19 +79,19 @@ const char * cleandotrefs(const char * s, char obuf[RP_BUFSIZ])
 const char * relpath(const char * f, const char * t, char obuf[RP_BUFSIZ])
 {
     if (t[0] == '/') {
+	/* absolute part */
 	const char * p;
 	char * rpp;
 	int l;
 	char tbuf[RP_BUFSIZ];
 	t = cleandotrefs(t, tbuf);
 
-	/* absolute part */
 	t++;
 	while (t[0] == '.' && t[1] == '.' && t[2] == '/')
 	    t += 3;
 
 	/* search common prefix... */
-	while (*f == *t ) {
+	while (*f && *f == *t ) {
 	    f++; t++;
 	}
 	f--; t--;
@@ -104,20 +104,21 @@ const char * relpath(const char * f, const char * t, char obuf[RP_BUFSIZ])
 	rpp = obuf;
 	rpp[0] = '\0';
 	p = f;
-	//printf("xxx %s\n", p);
+	/*printf("xxx %s\n", p);*/
 	while ((p = strchr(p, '/')) != null) {
-	    if (rpp - obuf < (ssize_t)sizeof obuf - 20) {
+	    if (rpp - obuf < RP_BUFSIZ - 20) {
 		rpp[0] = '.'; rpp[1] = '.'; rpp[2] = '/'; rpp[3] = '\0';
 		rpp += 3;
 	    }
 	    p++;
 	}
 	l = strlen(t);
-	if ( (rpp - obuf) + l < (ssize_t)sizeof obuf - 2)
+	if ( (rpp - obuf) + l < RP_BUFSIZ - 2)
 	    memcpy(rpp, t, l + 1);
 	else
 	    strcpy(rpp, "junk"); /* XXX */
 
+	/*printf("xxx %s\n", obuf);*/
 	return obuf;
     }
     else {

@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Thu 22 Oct 2009 19:30:08 EEST too
+ * Last modified: Sat 24 Oct 2009 16:57:58 EEST too
  */
 
 #include <string.h>
@@ -136,7 +136,9 @@ static void getfilesize(void)
 
 static const char * filename_rooted(const char * pathname, char buf[RP_BUFSIZ])
 {
+    /*printf("pathname_: %s\n", pathname); */
     pathname = cleandotrefs(pathname, buf);
+    /*printf("pathname-: %s\n", pathname);*/
     if (pathname == null)
 	return null;
     if (pathname[0] == '/')
