@@ -25,7 +25,7 @@
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
 
-.TH xtar 1 "Oct 24, 2009"
+.TH xtar 1 "Sat Oct 24, 2009"
 
 .SH NAME
 xtar \- Extract (compressed) tar files with progress indication with all
@@ -58,18 +58,19 @@ file formats supported are those supported by libarchive 2.7.0.
 .SH OPTIONS
 .TP
 .B -\fIC <dir>\fP
-Change to directory <dir> for extracting any files.
+Change to directory <dir> before extracting any files.
 .TP
 .B -\fIS <seekpos[:length]>\fP
 Seek to given position before reading any tar input. Read as much as 'length'
 bytes if this part given. Note that when file is '-' (stdin) this option
-needs to be give in format '0:length'.
+needs to be given in format '0:length'.
 .TP
 .B -\fIn <file>\fP
-Write filename (and link destination, if any) for each extracted file.
+Write file name (and link destination, if any) of each extracted file
+to <file>.
 .TP
 .B -\fIl <file>\fP
-Instead of extracting symlinks, write link information to given file.
+Instead of extracting symlinks, write link information to <file>.
 Note: for Windows this is the only option to store symlink information.
 
 

@@ -4,9 +4,9 @@
 VERSION = 1.0
 VERDATE = 2009-10-24
 
-# in many targets, distclean is added as dependencies to avoid parallelism
+.NOTPARALLEL:
 
-all:	distclean src/version.h
+all:	src/version.h
 	@sed -n '/^all.sh:/,/^ *$$/ p' Makefile | tail -n +3 | sh -eux
 
 all.sh:
@@ -23,7 +23,7 @@ all.sh:
 	make -C src $goals $CC_W32
 
 
-src/version.h: distclean Makefile
+src/version.h: Makefile
 	echo '#define VERSION "$(VERSION)":#define VERDATE "$(VERDATE)"' \
 		| tr : \\012 > $@
 
@@ -48,8 +48,8 @@ gitlog: distclean
 
 
 targz: distclean gitlog README_AND_COPYRIGHT
+	test ! -d ../xtar-$(VERSION) || exit 1
 	cd .. && ln -s xtar xtar-$(VERSION)
-	cd .. && trap 'rm xtar-$(VERSION)' 0 \
-		&& tar --exclude .git -zhcvf xtar-$(VERSION).tar.gz xtar-$(VERSION)
+	cd .. && trap 'rm xtar-$(VERSION)' 0 && tar --format=ustar --exclude .git -zhcvf xtar-$(VERSION).tar.gz xtar-$(VERSION)
 
 .PHONY: always
