@@ -3,7 +3,7 @@
  WARN="-Wall -Wno-long-long -Wstrict-prototypes -pedantic"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
- case $1 in '') set x -O2 ### set x -ggdb;
+ case $1 in '') set x -O2 -ggdb;
 	shift ;; esac;
  set -x; ${CC:-gcc} $WARN "$@" -o "$TRG" "$0" -DRP_TEST -DCDATE="\"`date`\""
  exit $?
@@ -18,7 +18,7 @@
  *	    All rights reserved
  *
  * Created: Tue 20 Oct 2009 18:28:02 EEST too
- * Last modified: Sat 24 Oct 2009 16:57:43 EEST too
+ * Last modified: Wed 18 Nov 2009 20:15:35 EET too
  */
 
 /* See README_AND_COPYRIGHT for license information */
@@ -34,10 +34,11 @@ const char * cleandotrefs(const char * s, char obuf[RP_BUFSIZ])
 {
     char * pd = obuf;
     int state, other;
+    char c;
 
     state = (s[0] == '.')? 1: (s[0] == '/')? 0: -1;
     other = 0;
-    while (*s)
+    while ( (c = *s++) != '\0')
     {
 	/* fixme: if illegal chars found, return null */
 	switch (state)
@@ -45,18 +46,18 @@ const char * cleandotrefs(const char * s, char obuf[RP_BUFSIZ])
 	case -1:
 	    other++;
 	    state = 0;
-	case 0: if (*s == '/') state = 1;
+	case 0: if (c == '/') state = 1;
 	    break;
 	case 1:
-	    if (*s == '.') { state = 2; break; }
-	    if (*s == '/') pd--; else state = -1;
+	    if (c == '.') { state = 2; break; }
+	    if (c == '/') continue /* while */; else state = -1;
 	    break;
 	case 2:
-	    if (*s == '/') { state = 1; pd -= 2; break; }
-	    if (*s == '.') state = 3; else state = -1;
+	    if (c == '/') { state = 1; pd -= 1; continue /* while */; }
+	    if (c == '.') state = 3; else state = -1;
 	    break;
 	case 3:
-	    if (*s != '/') { state = -1; break; }
+	    if (c != '/') { state = -1; break; }
 	    state = 1;
 	    if (other) {
 		other--;
@@ -68,7 +69,7 @@ const char * cleandotrefs(const char * s, char obuf[RP_BUFSIZ])
 	}
 	if (pd - obuf >= RP_BUFSIZ)
 	    return null;
-	*pd++ = *s++;
+	*pd++ = c;
     }
     *pd = '\0';
     return obuf;
@@ -150,24 +151,23 @@ const char * relpath(const char * f, const char * t, char obuf[RP_BUFSIZ])
 
 void tst(const char * str)
 {
-    char buf[1024];
-    strcpy(buf, str);
+    char obuf[RP_BUFSIZ];
 
-    printf("%s ->", buf);
-    printf(" %s\n", relpath("lib/bar/baz/bip", buf));
+    printf("%s -> ", str);
+    printf("%s\n", relpath("lib3/bar/baz/bip", str, obuf));
 }
 
 int main(int argc, char * argv[])
 {
-    tst("../lib/libXrender.la");
-    tst("../..//lib/./libXrender.la");
-    tst("../../lib/foo/../libXrender.la");
-    tst("../../lib/../../libXrender.la");
-    tst("../../lib/../../../libXrender.la");
-    tst("../../../lib/..//.//../libXrender.la");
-    tst("./../../lib/libXrender.la");
-    tst("/../../lib/libXrender.la");
-    tst(".///./../../lib/libXrender.la");
+    tst("../lib1/libXrender.la");
+    tst("../..//lib2/./libXrender.la");
+    tst("../../lib3/foo/../libXrender.la");
+    tst("../../lib4/../../libXrender.la");
+    tst("../../lib5/../../../libXrender.la");
+    tst("../../../lib6/..//.//../libXrender.la");
+    tst("./../../lib7/libXrender.la");
+    tst("/../../lib8/libXrender.la");
+    tst(".///./../../lib9/libXrender.la");
     return 0;
 }
 #endif
