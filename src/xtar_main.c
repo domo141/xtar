@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sat 24 Oct 2009 18:05:26 EEST too
+ * Last modified: Thu 19 Nov 2009 15:29:51 EET too
  */
 
 #include <string.h>
@@ -274,7 +274,7 @@ static void extract_file(const char * name, struct archive * a,
     else
 	perm = 0644;
 
-    if (G.namefh) fprintf(G.namefh, "%s\n", name);
+    if (G.namefh) fprintf(G.namefh, "f %s\n", name);
     doparents(name);
     int fd = open(name, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY, perm);
     if (fd < 0)
@@ -297,7 +297,7 @@ static void extract_dir(const char * name, struct archive_entry * entry)
     struct stat st;
     (void)entry;
 
-    if (G.namefh) fprintf(G.namefh, "%s/\n", name);
+    if (G.namefh) fprintf(G.namefh, "d %s\n", name);
 
     if (stat(name, &st) == 0) {
 	if (! S_ISDIR(st.st_mode))
@@ -320,7 +320,7 @@ static void extract_dir(const char * name, struct archive_entry * entry)
 
 static void extract_symlink(const char * name, struct archive_entry * entry)
 {
-    if (G.namefh) fprintf(G.namefh, "%s@\n", name);
+    if (G.namefh) fprintf(G.namefh, "l %s\n", name);
     if (G.linkfh) {
 	const char * linkname = archive_entry_symlink(entry);
 #if WIN32
@@ -357,7 +357,7 @@ static void extract_hardlink(const char * name, struct archive_entry * entry)
     const char * linkname;
     char buf[RP_BUFSIZ];
 
-    if (G.namefh) fprintf(G.namefh, "%s#\n", name);
+    if (G.namefh) fprintf(G.namefh, "h %s\n", name);
     linkname = filename_rooted(archive_entry_hardlink(entry), buf);
     if (linkname == null || *linkname == 0)
 	return; /* XXX error message */
