@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Thu 19 Nov 2009 15:29:51 EET too
+ * Last modified: Thu 07 Jan 2010 16:14:44 EET too
  */
 
 #include <string.h>
@@ -323,13 +323,7 @@ static void extract_symlink(const char * name, struct archive_entry * entry)
     if (G.namefh) fprintf(G.namefh, "l %s\n", name);
     if (G.linkfh) {
 	const char * linkname = archive_entry_symlink(entry);
-#if WIN32
-	// hack for the usual case: path/to/FOO -> foo (caseinsensitive fs)
-	const char * basename = strrchr(name, '/');
-	if (basename == null) basename = name;
-	if (strcasecmp(basename, linkname) != 0)
-#endif
-	    fprintf(G.linkfh, "%s -> %s\n", name, linkname);
+	fprintf(G.linkfh, "%s -> %s\n", name, linkname);
     }
 #if !WIN32
     else {
