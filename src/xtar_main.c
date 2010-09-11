@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Thu 07 Jan 2010 16:14:44 EET too
+ * Last modified: Sat 11 Sep 2010 13:40:43 EEST too
  */
 
 #include <string.h>
@@ -41,6 +41,7 @@ struct {
     size_t seekto;
     size_t filesize;
     size_t bytesread;
+    int strip_components;
 } G;
 
 void init_G(const char * pn)
@@ -61,8 +62,9 @@ static void usage(const char * format, ...)
 	va_end(ap);
 	fputc('\n', stderr);
     }
-    fprintf(stderr, "\nUsage: %s [-C <dir>] [-S seekpos[:length]] [-n <file>] "
-	    " [-l <file>] tarfile\n\n", G.progname);
+    fprintf(stderr, "\nUsage: %s [-C <dir>] [--strip-components=n] "
+	    "[-S seekpos[:length]] [-n <file>] [-l <file>] tarfile\n\n",
+	    G.progname);
     exit(1);
 }
 
@@ -95,6 +97,12 @@ static void handle_args(int argc, char ** argv)
 	case 'n': G.namefile = get_next_arg(&argc, &argv, ARGREQ("n")); break;
 	case 'l': G.linkfile = get_next_arg(&argc, &argv, ARGREQ("l")); break;
 	case 'S': seekarg = get_next_arg(&argc, &argv, ARGREQ("S")); break;
+	case '-':
+	    if (memcmp(argv[0], "--strip-components=", 19) == 0
+		&& isdigit(argv[0][19])) {
+		G.strip_components = atoi(&argv[0][19]);
+		break;
+	    }
 	default:
 	    usage("%s: unknown option.", argv[0]);
 	}
@@ -145,6 +153,14 @@ static const char * filename_rooted(const char * pathname, char buf[RP_BUFSIZ])
 	pathname++;
     while (pathname[0] == '.' && pathname[1] == '.' &&  pathname[2] == '/')
 	pathname += 3;
+    /*printf("pathname-: %s\n", pathname); */
+    if (G.strip_components)
+	for (int i = 0; i < G.strip_components; i++) {
+	    pathname = strchr(pathname, '/');
+	    if (pathname == null)
+		return null;
+	    pathname++;
+	}
     return pathname;
 }
 
