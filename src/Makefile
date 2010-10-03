@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Tue 20 Oct 2009 22:13:55 EEST too
+# Last modified: Sun 03 Oct 2010 23:55:48 EEST too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -19,6 +19,7 @@ LA_OBJ = archive_check_magic.o archive_entry.o archive_read.o \
 	archive_read_open_fd.o archive_read_open_filename.o \
 	archive_read_support_format_tar.o archive_string.o \
 	archive_string_sprintf.o archive_util.o archive_virtual.o \
+	archive_entry_xattr.o \
 	archive_read_support_compression_gzip.o \
 	archive_read_support_compression_bzip2.o
 
