@@ -38,7 +38,8 @@ while (<P>) {
 	delete $hash2{$1};
 	if (defined $ARGV[2]) {
 	    my $fd = substr $2, $sl;
-	    system 'xxdiff', $2, "$ARGV[2]/$fd";
+	    #system 'xxdiff', $2, "$ARGV[2]/$fd";
+	    #system 'cp', "$ARGV[2]/$fd", $m;
 	}
     }
 }
