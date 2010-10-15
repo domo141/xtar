@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Sun 03 Oct 2010 23:55:48 EEST too
+# Last modified: Fri 15 Oct 2010 13:06:29 EEST too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -81,7 +81,7 @@ WARN1?= -W -Wwrite-strings -Wcast-qual -Wshadow #-Wconversion
 
 WOPTS=	$(WARN0) $(WARN1)
 
-CFLAGS=-O2 -I. -I.. -ggdb
+CFLAGS=-O2 -I. -I.. -ggdb -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 C99FLAGS=-std=gnu99
 
 OPTS= $(CFLAGS) $(C99FLAGS) $(WOPTS)
