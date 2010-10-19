@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Fri 15 Oct 2010 13:06:29 EEST too
+# Last modified: Tue 19 Oct 2010 15:04:47 EEST too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -81,7 +81,8 @@ WARN1?= -W -Wwrite-strings -Wcast-qual -Wshadow #-Wconversion
 
 WOPTS=	$(WARN0) $(WARN1)
 
-CFLAGS=-O2 -I. -I.. -ggdb -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+# __CYGWIN__ for making w32 cross-compiling work...
+CFLAGS=-O2 -I. -I.. -ggdb -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D__CYGWIN__
 C99FLAGS=-std=gnu99
 
 OPTS= $(CFLAGS) $(C99FLAGS) $(WOPTS)
