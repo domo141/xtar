@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Tue 19 Oct 2010 15:04:47 EEST too
+# Last modified: Tue 19 Oct 2010 16:00:20 EEST too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -65,6 +65,9 @@ $(TRG_W32): $(OBJ_W32)
 $(OBJ_UX): obj_ux/.dirstamp Makefile archive_platform.h
 $(OBJ_W32): obj_w32/.dirstamp Makefile archive_platform.h
 
+$(OBJ_UX): AOPTS=
+$(OBJ_W32): AOPTS=-D__CYGWIN__ # makes w32 cross-compiling work.
+
 obj_ux/.dirstamp:
 	test -d obj_ux || mkdir obj_ux
 	touch $@
@@ -81,11 +84,10 @@ WARN1?= -W -Wwrite-strings -Wcast-qual -Wshadow #-Wconversion
 
 WOPTS=	$(WARN0) $(WARN1)
 
-# __CYGWIN__ for making w32 cross-compiling work...
-CFLAGS=-O2 -I. -I.. -ggdb -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D__CYGWIN__
+CFLAGS=-O2 -I. -I.. -ggdb -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 C99FLAGS=-std=gnu99
 
-OPTS= $(CFLAGS) $(C99FLAGS) $(WOPTS)
+OPTS= $(CFLAGS) $(C99FLAGS) $(WOPTS) $(AOPTS)
 
 # --8<----8<----8<----8<----8<--
 
