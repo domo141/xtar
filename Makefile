@@ -1,8 +1,8 @@
 
 # 'all' -target will rebuild everything from scratch (to be sure)
 
-VERSION = 1.7
-VERDATE = 2010-10-19
+VERSION = 1.8
+VERDATE = 2010-10-20
 
 .NOTPARALLEL:
 

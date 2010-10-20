@@ -7,11 +7,12 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Sat 11 Sep 2010 13:40:43 EEST too
+ * Last modified: Wed 20 Oct 2010 16:58:44 EEST too
  */
 
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>
 
@@ -267,7 +268,7 @@ int main(int argc, char * argv[])
     }
     archive_read_close(a);
     archive_read_finish(a);
-    write(1, "\n", 1);
+    (void)write(1, "\n", 1);
     return 0;
 }
 
@@ -376,11 +377,16 @@ static void extract_hardlink(const char * name, struct archive_entry * entry)
 #if WIN32
     DWORD error = link_w32(linkname, name);
     if (error != 0) {
-	if (error == ERROR_FILE_EXISTS)
-	    warn("Can not create hard link '%s' => '%s': destination file exists",
-		 name, linkname);
+	// if (error == ERROR_FILE_EXISTS)
+	if (error == ERROR_ALREADY_EXISTS) {
+	    // strcasecmp() check takes some of the complains away; not
+	    // those when destination exists with other name in the fs already.
+	    if (strcasecmp(linkname, name) != 0)
+		warn("Can not create hard link '%s' => '%s':"
+		     " destination file exists", name, linkname);
+	}
 	else
-	    die("link('%s', '%s'):", linkname, name);
+	    w32die(error, "link('%s', '%s'):", linkname, name);
     }
 #else
     if (link(linkname, name) != 0) {

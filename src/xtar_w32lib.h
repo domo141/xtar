@@ -18,7 +18,7 @@
  *	    All rights reserved
  *
  * Created: Tue 25 Aug 2009 19:00:20 EEST too
- * Last modified: Wed 26 Aug 2009 10:36:02 EEST too
+ * Last modified: Wed 20 Oct 2010 15:19:58 EEST too
  */
 
 #ifndef XTAR_W32LIB_H
@@ -27,6 +27,10 @@
 #include <windows.h>
 
 DWORD link_w32 (const char * from, const char * to);
+
+void w32vwarn(int error, const char * format, va_list ap);
+void w32die(int error, const char * format, ...);
+
 
 
 #endif /* XTAR_W32LIB_H */
