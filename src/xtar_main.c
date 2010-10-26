@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Wed 20 Oct 2010 16:58:44 EEST too
+ * Last modified: Tue 26 Oct 2010 09:45:23 EEST too
  */
 
 #include <string.h>
@@ -39,9 +39,9 @@ struct {
     const char * linkfile;
     FILE * namefh;
     FILE * linkfh;
-    size_t seekto;
-    size_t filesize;
-    size_t bytesread;
+    int64_t seekto;
+    int64_t filesize;
+    int64_t bytesread;
     int strip_components;
 } G;
 

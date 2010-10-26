@@ -130,9 +130,9 @@ struct archive_read {
 	 * data to client buffers, filling gaps with zero bytes.
 	 */
 	const char	 *read_data_block;
-	off_t		  read_data_offset;
-	off_t		  read_data_output_offset;
-	size_t		  read_data_remaining;
+	int64_t		  read_data_offset;
+	int64_t		  read_data_output_offset;
+	int64_t		  read_data_remaining;
 
 	/* Callbacks to open/read/write/close client archive stream. */
 	struct archive_read_client client;
@@ -161,7 +161,7 @@ struct archive_read {
 		int	(*options)(struct archive_read *, const char *key,
 		    const char *value);
 		int	(*read_header)(struct archive_read *, struct archive_entry *);
-		int	(*read_data)(struct archive_read *, const void **, size_t *, off_t *);
+		int	(*read_data)(struct archive_read *, const void **, int64_t *, int64_t *);
 		int	(*read_data_skip)(struct archive_read *);
 		int	(*cleanup)(struct archive_read *);
 	}	formats[9];
@@ -180,7 +180,7 @@ int	__archive_read_register_format(struct archive_read *a,
 	    int (*bid)(struct archive_read *),
 	    int (*options)(struct archive_read *, const char *, const char *),
 	    int (*read_header)(struct archive_read *, struct archive_entry *),
-	    int (*read_data)(struct archive_read *, const void **, size_t *, off_t *),
+	    int (*read_data)(struct archive_read *, const void **, int64_t *, int64_t *),
 	    int (*read_data_skip)(struct archive_read *),
 	    int (*cleanup)(struct archive_read *));
 

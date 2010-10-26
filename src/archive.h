@@ -396,7 +396,7 @@ __LA_DECL __LA_SSIZE_T		 archive_read_data(struct archive *,
  */
 #if ARCHIVE_VERSION_NUMBER < 3000000
 __LA_DECL int		 archive_read_data_block(struct archive *a,
-			    const void **buff, size_t *size, off_t *offset);
+			    const void **buff, int64_t *size, int64_t *offset);
 #else
 __LA_DECL int		 archive_read_data_block(struct archive *a,
 			    const void **buff, size_t *size,

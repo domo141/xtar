@@ -664,8 +664,8 @@ archive_read_data_skip(struct archive *_a)
 	struct archive_read *a = (struct archive_read *)_a;
 	int r;
 	const void *buff;
-	size_t size;
-	off_t offset;
+	int64_t size;
+	int64_t offset;
 
 	__archive_check_magic(_a, ARCHIVE_READ_MAGIC, ARCHIVE_STATE_DATA,
 	    "archive_read_data_skip");
@@ -696,7 +696,7 @@ archive_read_data_skip(struct archive *_a)
  */
 int
 archive_read_data_block(struct archive *_a,
-    const void **buff, size_t *size, off_t *offset)
+    const void **buff, int64_t *size, int64_t *offset)
 {
 	struct archive_read *a = (struct archive_read *)_a;
 	__archive_check_magic(_a, ARCHIVE_READ_MAGIC, ARCHIVE_STATE_DATA,
@@ -820,7 +820,7 @@ __archive_read_register_format(struct archive_read *a,
     int (*bid)(struct archive_read *),
     int (*options)(struct archive_read *, const char *, const char *),
     int (*read_header)(struct archive_read *, struct archive_entry *),
-    int (*read_data)(struct archive_read *, const void **, size_t *, off_t *),
+    int (*read_data)(struct archive_read *, const void **, int64_t *, int64_t *),
     int (*read_data_skip)(struct archive_read *),
     int (*cleanup)(struct archive_read *))
 {

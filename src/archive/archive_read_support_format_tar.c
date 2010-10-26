@@ -138,8 +138,8 @@ struct archive_entry_header_gnutar {
  */
 struct sparse_block {
 	struct sparse_block	*next;
-	off_t	offset;
-	off_t	remaining;
+	int64_t	offset;
+	int64_t	remaining;
 };
 
 struct tar {
@@ -176,7 +176,7 @@ static ssize_t	UTF8_mbrtowc(wchar_t *pwc, const char *s, size_t n);
 static int	archive_block_is_null(const unsigned char *p);
 static char	*base64_decode(const char *, size_t, size_t *);
 static void	 gnu_add_sparse_entry(struct tar *,
-		    off_t offset, off_t remaining);
+		    int64_t offset, int64_t remaining);
 static void	gnu_clear_sparse_list(struct tar *);
 static int	gnu_sparse_old_read(struct archive_read *, struct tar *,
 		    const struct archive_entry_header_gnutar *header);
@@ -207,7 +207,7 @@ static int	header_gnutar(struct archive_read *, struct tar *,
 static int	archive_read_format_tar_bid(struct archive_read *);
 static int	archive_read_format_tar_cleanup(struct archive_read *);
 static int	archive_read_format_tar_read_data(struct archive_read *a,
-		    const void **buff, size_t *size, off_t *offset);
+		    const void **buff, int64_t *size, int64_t *offset);
 static int	archive_read_format_tar_skip(struct archive_read *a);
 static int	archive_read_format_tar_read_header(struct archive_read *,
 		    struct archive_entry *);
@@ -438,7 +438,7 @@ archive_read_format_tar_read_header(struct archive_read *a,
 
 static int
 archive_read_format_tar_read_data(struct archive_read *a,
-    const void **buff, size_t *size, off_t *offset)
+    const void **buff, int64_t *size, int64_t *offset)
 {
 	ssize_t bytes_read;
 	struct tar *tar;
@@ -1727,7 +1727,7 @@ header_gnutar(struct archive_read *a, struct tar *tar,
 }
 
 static void
-gnu_add_sparse_entry(struct tar *tar, off_t offset, off_t remaining)
+gnu_add_sparse_entry(struct tar *tar, int64_t offset, int64_t remaining)
 {
 	struct sparse_block *p;
 
@@ -1848,7 +1848,7 @@ static int
 gnu_sparse_01_parse(struct tar *tar, const char *p)
 {
 	const char *e;
-	off_t offset = -1, size = -1;
+	int64_t offset = -1, size = -1;
 
 	for (;;) {
 		e = p;
@@ -1899,7 +1899,7 @@ gnu_sparse_01_parse(struct tar *tar, const char *p)
  */
 static int64_t
 gnu_sparse_10_atol(struct archive_read *a, struct tar *tar,
-    ssize_t *remaining)
+    int64_t *remaining)
 {
 	int64_t l, limit, last_digit_limit;
 	const char *p;
@@ -1946,9 +1946,9 @@ gnu_sparse_10_atol(struct archive_read *a, struct tar *tar,
 static ssize_t
 gnu_sparse_10_read(struct archive_read *a, struct tar *tar)
 {
-	ssize_t remaining, bytes_read;
+	ssize_t bytes_read;
 	int entries;
-	off_t offset, size, to_skip;
+	int64_t offset, size, to_skip, remaining;
 
 	/* Clear out the existing sparse list. */
 	gnu_clear_sparse_list(tar);

@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Tue 19 Oct 2010 16:00:20 EEST too
+# Last modified: Tue 26 Oct 2010 10:21:25 EEST too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -47,7 +47,7 @@ all: $(TRG_UX) always
 
 TRGS_ALL = $(TRG_UX) $(TRG_UX_DYN) $(TRG_W32)
 
-LFLAGS =
+LFLAGS = #-m32
 LFLAGS_DYN = -s -lz -lbz2
 
 $(TRG_UX): $(OBJ_UX)
@@ -65,7 +65,7 @@ $(TRG_W32): $(OBJ_W32)
 $(OBJ_UX): obj_ux/.dirstamp Makefile archive_platform.h
 $(OBJ_W32): obj_w32/.dirstamp Makefile archive_platform.h
 
-$(OBJ_UX): AOPTS=
+$(OBJ_UX): AOPTS= -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 $(OBJ_W32): AOPTS=-D__CYGWIN__ # makes w32 cross-compiling work.
 
 obj_ux/.dirstamp:
@@ -84,7 +84,7 @@ WARN1?= -W -Wwrite-strings -Wcast-qual -Wshadow #-Wconversion
 
 WOPTS=	$(WARN0) $(WARN1)
 
-CFLAGS=-O2 -I. -I.. -ggdb -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS= -O2 -I. -I.. -ggdb #-m32
 C99FLAGS=-std=gnu99
 
 OPTS= $(CFLAGS) $(C99FLAGS) $(WOPTS) $(AOPTS)
@@ -123,6 +123,6 @@ clean: always
 	rm -rf obj_ux obj_w32 *~
 
 distclean: clean
-	rm -f $(TRGS_ALL)
+	rm -f $(TRGS_ALL) core core.*
 
 .PHONY: always
