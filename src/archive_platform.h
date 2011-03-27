@@ -8,7 +8,7 @@
  *	    All rights reserved
  *
  * Created: Wed 27 May 2009 20:48:29 EEST too
- * Last modified: Sun 14 Jun 2009 17:48:32 EEST too
+ * Last modified: Mon 04 Oct 2010 22:08:59 EEST too
  */
 
 /* stuff from original archive_platform.h, with extras and tunes */
@@ -35,7 +35,8 @@
 
 #define HAVE_ZLIB_H 1
 #define HAVE_BZLIB_H 1
-
+#define HAVE_LZMA_H 1
+#define HAVE_LIBLZMA 1
 
 #define ARCHIVE_ERRNO_MISC 1
 #define ARCHIVE_ERRNO_FILE_FORMAT 2

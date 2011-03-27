@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Tue 26 Oct 2010 10:21:25 EEST too
+# Last modified: Tue 02 Nov 2010 01:11:35 EET too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -21,14 +21,18 @@ LA_OBJ = archive_check_magic.o archive_entry.o archive_read.o \
 	archive_string_sprintf.o archive_util.o archive_virtual.o \
 	archive_entry_xattr.o \
 	archive_read_support_compression_gzip.o \
-	archive_read_support_compression_bzip2.o
+	archive_read_support_compression_bzip2.o \
+	archive_read_support_compression_xz.o
 
 BZ2_OBJ = bzlib_partial.o crctable.o decompress.o huffman.o randtable.o
 Z_OBJ = inflate.o inffast.o inftrees.o crc32.o adler32.o zutil.o
 
+XZ_OBJ =alone_decoder.o arm.o armthumb.o block_decoder.o block_header_decoder.o block_util.o check.o common.o crc32_small.o delta_common.o delta_decoder.o filter_common.o filter_decoder.o filter_flags_decoder.o ia64.o index_hash.o lz_decoder.o lzma2_decoder.o lzma_decoder.o powerpc.o simple_coder.o simple_decoder.o sparc.o stream_decoder.o stream_flags_common.o stream_flags_decoder.o vli_decoder.o vli_size.o x86.o 
+
 XTAR_OBJ = xtar_main.o xtar_util.o relpath.o
 
-OBJ =  $(XTAR_OBJ) $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ) 
+OBJ = $(XZ_OBJ) $(XTAR_OBJ) $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ)
+#OBJ =  $(XTAR_OBJ) $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ) $(XZ_OBJ) 
 OBJ_DYN = $(XTAR_OBJ) $(LA_OBJ)
 
 OBJ_UX = $(OBJ:%=obj_ux/%)
@@ -102,6 +106,10 @@ obj_ux/%.o: bzip2/%.c
 
 obj_ux/%.o: zlib/%.c
 	$(CC) -o $@ -c $< $(OPTS)
+
+obj_ux/%.o: lzma_xz_code/%.c
+	$(CC) -o $@ -c $< $(OPTS)
+
 
 # --8<----8<----8<----8<----8<--
 

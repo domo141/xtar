@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri 05 Jun 2009 15:56:03 EEST too
- * Last modified: Tue 26 Oct 2010 09:45:23 EEST too
+ * Last modified: Sun 27 Mar 2011 22:13:03 EEST too
  */
 
 #include <string.h>
@@ -198,6 +198,7 @@ int main(int argc, char * argv[])
 
     archive_read_support_compression_gzip(a);
     archive_read_support_compression_bzip2(a);
+    archive_read_support_compression_xz(a);
 
     /* read from stdin in case filename == '-' */
     if (G.filename != null && strcmp(G.filename, "-") == 0) {

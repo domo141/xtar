@@ -2,8 +2,8 @@
 This is my attempt to create portable and easily extendable tar extraction
 program, which supports:
 
-	- all tar formats supported by libarchive 2.7.0
-	- gzip and bzip2 (xz in the future) decompression
+	- all tar formats supported by libarchive 2.8.4
+	- gzip, bzip2 and xz (+lzma) decompression
 
 Target platforms: Unix, Windows (using mingw (cross) compiler).
 	- Note that archive_windows.[ch] is not included (but viewed
@@ -14,9 +14,10 @@ source code (added on demand during trial and error compilation loops).
 
 See files
 
-	- libarchive-2.7.0_COPYING
-	- bzip2-1.0.5_LICENSE
+	- libarchive-2.8.4-COPYING
+	- bzip2-1.0.5-LICENSE
 	- zlib-1.2.3-README
+	- xz-5.0.1-COPYING
 
 for copyright information of these parts. For the other files the following
 copyright apply:
@@ -46,4 +47,4 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Tomi Ollila, too ät iki piste fi
-xtar version 1.9 2010-10-26
+xtar version 2.0 2011-03-27
