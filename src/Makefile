@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Fri 05 Jun 2009 16:10:12 EEST too
-# Last modified: Tue 02 Nov 2010 01:11:35 EET too
+# Last modified: Mon 28 Mar 2011 17:50:12 EEST too
 
 CC = /bin/false
 CC_UX =	gcc
@@ -31,8 +31,7 @@ XZ_OBJ =alone_decoder.o arm.o armthumb.o block_decoder.o block_header_decoder.o 
 
 XTAR_OBJ = xtar_main.o xtar_util.o relpath.o
 
-OBJ = $(XZ_OBJ) $(XTAR_OBJ) $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ)
-#OBJ =  $(XTAR_OBJ) $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ) $(XZ_OBJ) 
+OBJ = $(XTAR_OBJ) $(LA_OBJ) $(BZ2_OBJ) $(Z_OBJ) $(XZ_OBJ) 
 OBJ_DYN = $(XTAR_OBJ) $(LA_OBJ)
 
 OBJ_UX = $(OBJ:%=obj_ux/%)
@@ -51,8 +50,8 @@ all: $(TRG_UX) always
 
 TRGS_ALL = $(TRG_UX) $(TRG_UX_DYN) $(TRG_W32)
 
-LFLAGS = #-m32
-LFLAGS_DYN = -s -lz -lbz2
+LFLAGS = -s #-m32
+LFLAGS_DYN = -s -lz -lbz2 -llzma
 
 $(TRG_UX): $(OBJ_UX)
 	$(CC) -o $@ $(LFLAGS) $(OBJ_UX)
@@ -124,6 +123,10 @@ obj_w32/%.o: bzip2/%.c
 
 obj_w32/%.o: zlib/%.c
 	$(CC) -o $@ -c $< $(OPTS)
+
+obj_w32/%.o: lzma_xz_code/%.c
+	$(CC) -o $@ -c $< $(OPTS)
+
 
 # --8<----8<----8<----8<----8<--
 
