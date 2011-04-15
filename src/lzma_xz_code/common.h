@@ -11,6 +11,8 @@
 #define HAVE_DECODER_SPARC
 #define HAVE_DECODER_DELTA
 
+#define HAVE_CHECK_CRC32
+
 #define HAVE_SMALL
 
 #include <string.h>
